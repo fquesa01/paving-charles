@@ -616,6 +616,12 @@ const Icon = ({ name, size = 20, color = "currentColor" }) => {
     dollar: <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z" />,
     target: <path d="M12 2C6.49 2 2 6.49 2 12s4.49 10 10 10 10-4.49 10-10S17.51 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm3-8c0 1.66-1.34 3-3 3s-3-1.34-3-3 1.34-3 3-3 3 1.34 3 3z" />,
     pdf: <path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm10 5.5h1v-3h-1v3z" />,
+    analytics: <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>,
+    book: <path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z"/>,
+    weather: <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>,
+    globe: <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm6.93 6h-2.95a15.65 15.65 0 00-1.38-3.56A8.03 8.03 0 0118.92 8zM12 4.04c.83 1.2 1.48 2.53 1.91 3.96h-3.82c.43-1.43 1.08-2.76 1.91-3.96zM4.26 14C4.1 13.36 4 12.69 4 12s.1-1.36.26-2h3.38c-.08.66-.14 1.32-.14 2s.06 1.34.14 2H4.26zm.82 2h2.95c.32 1.25.78 2.45 1.38 3.56A7.987 7.987 0 015.08 16zm2.95-8H5.08a7.987 7.987 0 014.33-3.56A15.65 15.65 0 008.03 8zM12 19.96c-.83-1.2-1.48-2.53-1.91-3.96h3.82c-.43 1.43-1.08 2.76-1.91 3.96zM14.34 14H9.66c-.09-.66-.16-1.32-.16-2s.07-1.35.16-2h4.68c.09.65.16 1.32.16 2s-.07 1.34-.16 2zm.25 5.56c.6-1.11 1.06-2.31 1.38-3.56h2.95a8.03 8.03 0 01-4.33 3.56zM16.36 14c.08-.66.14-1.32.14-2s-.06-1.34-.14-2h3.38c.16.64.26 1.31.26 2s-.1 1.36-.26 2h-3.38z"/>,
+    bolt: <path d="M11 21h-1l1-7H7.5c-.58 0-.57-.32-.38-.66.19-.34.05-.08.07-.12C8.48 10.94 10.42 7.54 13 3h1l-1 7h3.5c.49 0 .56.33.47.51l-.07.15C12.96 17.55 11 21 11 21z"/>,
+    shield: <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/>,
     stripe: <path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445 1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921-6.99-2.109l-.9 5.555C5.175 22.99 8.385 24 11.714 24c2.641 0 4.843-.624 6.328-1.813 1.664-1.305 2.525-3.236 2.525-5.732 0-4.128-2.524-5.851-6.591-7.305z" />,
     fuel: <path d="M19.77 7.23l.01-.01-3.72-3.72L15 4.56l2.11 2.11c-.94.36-1.61 1.26-1.61 2.33 0 1.38 1.12 2.5 2.5 2.5.36 0 .69-.08 1-.21v7.21c0 .55-.45 1-1 1s-1-.45-1-1V14c0-1.1-.9-2-2-2h-1V5c0-1.1-.9-2-2-2H6c-1.1 0-2 .9-2 2v16h10v-7.5h1.5v5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V9c0-.69-.28-1.32-.73-1.77zM12 10H6V5h6v5z" />,
   };
@@ -795,12 +801,15 @@ const ThemeToggle = ({ compact }) => {
 const Sidebar = ({ activeTab, setActiveTab, collapsed, setCollapsed }) => {
   const navItems = [
     { id: "home", icon: "home", label: "Home" },
-    { id: "messages", icon: "messages", label: "Comms Portal", badge: 3 },
-    { id: "projects", icon: "projects", label: "Projects" },
+    { id: "command", icon: "analytics", label: "Command Center" },
+    { id: "messages", icon: "messages", label: "Comms Hub", badge: 3 },
+    { id: "projects", icon: "projects", label: "Job Board" },
     { id: "projectmap", icon: "mapview", label: "Project Map" },
-    { id: "estimates", icon: "dollar", label: "Estimates & Billing" },
-    { id: "inventory", icon: "inventory", label: "Inventory" },
+    { id: "estimates", icon: "dollar", label: "Financial Ops" },
+    { id: "inventory", icon: "inventory", label: "Materials" },
     { id: "tracking", icon: "tracking", label: "Fleet & Crew" },
+    { id: "analytics", icon: "analytics", label: "Analytics" },
+    { id: "knowledge", icon: "book", label: "Knowledge Base" },
     { id: "leads", icon: "leads", label: "Lead Intel" },
     { id: "integrations", icon: "settings", label: "Integrations" },
   ];
@@ -1081,24 +1090,67 @@ const HomeView = ({ setActiveTab, setSelectedProject, isMobile }) => {
 
 // ─── DASHBOARD ──────────────────────────────────────────
 const DashboardView = ({ setActiveTab, setSelectedProject, isMobile }) => {
+  const today = WEATHER_FORECAST[0];
+  const totalRevenue = [...PROJECTS, ...CLOSED_PROJECTS].reduce((s, p) => s + (p.spent || 0), 0);
+  const pipelineValue = PROJECTS.reduce((s, p) => s + (p.budget || 0), 0);
   const stats = [
-    { label: "Active Projects", value: "2", sub: "+1 bidding", icon: "projects", color: COLORS.accent },
-    { label: "Crew Members Active", value: "5", sub: "of 8 total", icon: "people", color: COLORS.success },
-    { label: "Vehicles In Transit", value: "3", sub: "of 8 total", icon: "truck", color: COLORS.info },
-    { label: "New Leads", value: "4", sub: "this week", icon: "leads", color: COLORS.warning },
+    { label: "Active Jobs", value: String(PROJECTS.filter(p => p.status === "in-progress").length), sub: `+${PROJECTS.filter(p => p.status === "bidding").length} bidding`, icon: "projects", color: COLORS.accent },
+    { label: "Pipeline Value", value: `$${(pipelineValue/1000).toFixed(0)}K`, sub: `${PROJECTS.length} total projects`, icon: "dollar", color: COLORS.success },
+    { label: "Crew Active", value: String(EMPLOYEES.filter(e => e.status === "active").length), sub: `of ${EMPLOYEES.length} total`, icon: "people", color: COLORS.info },
+    { label: "Revenue MTD", value: `$${(totalRevenue/1000).toFixed(0)}K`, sub: "across all jobs", icon: "analytics", color: COLORS.warning },
   ];
 
   const pad = isMobile ? 16 : 32;
 
   return (
     <div style={{ padding: pad, overflowY: "auto", height: "100vh" }}>
-      <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontFamily: FONTS.display, fontSize: isMobile ? 24 : 32, fontWeight: 700, letterSpacing: "1px" }}>
-          Good morning, Sarah
-        </h1>
-        <p style={{ color: COLORS.textMuted, fontSize: isMobile ? 12 : 14, marginTop: 4 }}>
-          Thursday, February 26, 2026 — Here's your operations overview
-        </p>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 24, flexWrap: "wrap", gap: 12 }}>
+        <div>
+          <h1 style={{ fontFamily: FONTS.display, fontSize: isMobile ? 22 : 28, fontWeight: 700, letterSpacing: "0.5px" }}>
+            Command Center
+          </h1>
+          <p style={{ color: COLORS.textMuted, fontSize: 13, marginTop: 4 }}>
+            {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
+          </p>
+        </div>
+        {/* Weather Widget */}
+        <div style={{
+          display: "flex", alignItems: "center", gap: 12, padding: "10px 16px",
+          borderRadius: 12, background: today.pavingOk ? `${COLORS.success}10` : `${COLORS.danger}10`,
+          border: `1px solid ${today.pavingOk ? COLORS.success : COLORS.danger}30`,
+        }}>
+          <span style={{ fontSize: 28 }}>{today.icon}</span>
+          <div>
+            <div style={{ fontFamily: FONTS.display, fontSize: 18, fontWeight: 700 }}>{today.temp}°F</div>
+            <div style={{ fontSize: 11, color: COLORS.textMuted }}>{today.condition} · {today.wind}</div>
+          </div>
+          <Badge color={today.pavingOk ? COLORS.success : COLORS.danger} small>
+            {today.pavingOk ? "PAVING OK" : "NO PAVE"}
+          </Badge>
+        </div>
+      </div>
+
+      {/* 7-Day Forecast Bar */}
+      <div style={{
+        display: "flex", gap: isMobile ? 4 : 8, marginBottom: 20, overflowX: "auto", paddingBottom: 4,
+      }}>
+        {WEATHER_FORECAST.map((d, i) => (
+          <div key={i} style={{
+            flex: 1, minWidth: isMobile ? 70 : 0, textAlign: "center", padding: "8px 6px", borderRadius: 10,
+            background: d.pavingOk ? `${COLORS.success}08` : `${COLORS.danger}08`,
+            border: `1px solid ${d.pavingOk ? COLORS.success : COLORS.danger}20`,
+          }}>
+            <div style={{ fontSize: 10, color: COLORS.textMuted, fontFamily: FONTS.mono }}>{d.day}</div>
+            <div style={{ fontSize: 18, margin: "2px 0" }}>{d.icon}</div>
+            <div style={{ fontSize: 12, fontWeight: 600 }}>{d.high}°</div>
+            <div style={{ fontSize: 10, color: COLORS.textMuted }}>{d.low}°</div>
+            <div style={{
+              fontSize: 8, fontWeight: 700, marginTop: 2, padding: "1px 4px", borderRadius: 4,
+              background: d.pavingOk ? `${COLORS.success}20` : `${COLORS.danger}20`,
+              color: d.pavingOk ? COLORS.success : COLORS.danger,
+            }}>{d.pavingOk ? "OK" : "NO"}</div>
+          </div>
+        ))}
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(4, 1fr)", gap: isMobile ? 10 : 16, marginBottom: 24 }}>
@@ -2283,6 +2335,45 @@ const COST_REFERENCE = [
 ];
 
 
+// ─── WEATHER FORECAST (Mock) ──────────────────────────────
+const WEATHER_FORECAST = [
+  { day: "Today", temp: 52, high: 58, low: 44, condition: "Partly Cloudy", wind: "8 mph NW", humidity: "45%", pavingOk: true, icon: "☀️" },
+  { day: "Tomorrow", temp: 48, high: 55, low: 40, condition: "Overcast", wind: "12 mph W", humidity: "62%", pavingOk: true, icon: "⛅" },
+  { day: "Saturday", temp: 38, high: 42, low: 32, condition: "Rain", wind: "15 mph SW", humidity: "85%", pavingOk: false, icon: "🌧️" },
+  { day: "Sunday", temp: 35, high: 40, low: 28, condition: "Rain / Wind", wind: "20 mph W", humidity: "90%", pavingOk: false, icon: "🌧️" },
+  { day: "Monday", temp: 50, high: 56, low: 42, condition: "Sunny", wind: "6 mph E", humidity: "38%", pavingOk: true, icon: "☀️" },
+  { day: "Tuesday", temp: 55, high: 62, low: 46, condition: "Sunny", wind: "5 mph SE", humidity: "35%", pavingOk: true, icon: "☀️" },
+  { day: "Wednesday", temp: 58, high: 64, low: 48, condition: "Partly Cloudy", wind: "7 mph S", humidity: "42%", pavingOk: true, icon: "⛅" },
+];
+
+// ─── KNOWLEDGE BASE ARTICLES ──────────────────────────────
+const KB_ARTICLES = [
+  { id: 1, category: "Materials", title: "HMA Mix Types & Temperature Requirements", summary: "Hot Mix Asphalt must be placed at 275-300°F. Ambient temp must be ≥50°F and rising. Type S-III for driveways, Type S-I for commercial.", tags: ["HMA", "Temperature", "Mix Design"], updated: "Feb 20" },
+  { id: 2, category: "Materials", title: "Sealcoat Application Guide", summary: "Apply at 50°F+ with no rain forecast for 24hrs. Two coats recommended. Coverage: 50-80 sqft/gal depending on surface condition.", tags: ["Sealcoat", "Application"], updated: "Feb 18" },
+  { id: 3, category: "Safety", title: "OSHA Paving Safety Requirements", summary: "PPE requirements: hard hat, steel toe boots, hi-vis vest, safety glasses. Traffic control plan required for public road work.", tags: ["OSHA", "PPE", "Safety"], updated: "Feb 15" },
+  { id: 4, category: "Safety", title: "Pre-Shift Equipment Inspection Checklist", summary: "Daily inspection required: fluid levels, tire pressure, backup alarms, fire extinguisher, first aid kit. Document and sign off.", tags: ["Equipment", "Inspection"], updated: "Feb 12" },
+  { id: 5, category: "Operations", title: "Multi-Phase Job Workflow", summary: "Standard phases: Survey → Demo → Grade & Compact → Proof Roll → Tack Coat → Base Course → Surface Course → Sealcoat → Striping. Each phase requires sign-off.", tags: ["Workflow", "Phases"], updated: "Feb 10" },
+  { id: 6, category: "Operations", title: "Weather Decision Matrix", summary: "No paving below 50°F ambient or if rain >30% in 4hr window. Sealcoat needs 24hr dry window. Striping needs 50°F+ and dry surface.", tags: ["Weather", "Scheduling"], updated: "Feb 8" },
+  { id: 7, category: "Pricing", title: "Pricing Guidelines by Service Area", summary: "Residential: $4-8/sqft. Commercial: $2.50-7/sqft. Sealcoat: $0.20-0.50/sqft. Striping: $0.15-0.30/linear ft. Always include 15-20% margin on materials.", tags: ["Pricing", "Margins"], updated: "Feb 5" },
+  { id: 8, category: "Pricing", title: "Material Cost Reference (Q1 2026)", summary: "HMA: $85/ton (covers ~80sqft@2in). Aggregate base: $28/ton. Tack coat: $4.50/gal. Sealcoat: $3.75/gal. Edge forms: $22/10ft piece.", tags: ["Costs", "Materials"], updated: "Feb 1" },
+  { id: 9, category: "Training", title: "New Crew Member Onboarding", summary: "Week 1: Safety orientation, equipment familiarization, ride-along. Week 2: Supervised task work. Week 3: Independent tasks with check-ins. CDL required for drivers.", tags: ["Onboarding", "Training"], updated: "Jan 28" },
+  { id: 10, category: "Equipment", title: "Paver Maintenance Schedule", summary: "Daily: clean screed, grease fittings. Weekly: check hydraulic fluid, belts, chains. Monthly: full inspection. Annual: manufacturer service.", tags: ["Paver", "Maintenance"], updated: "Jan 25" },
+];
+
+// ─── AUTOMATION CRON JOBS ─────────────────────────────────
+const AUTOMATIONS = [
+  { id: 1, name: "Weather Check & Auto-Reschedule", schedule: "Every 6 hours", status: "active", lastRun: "2 hrs ago", description: "Checks 7-day forecast. Flags at-risk jobs. Sends delay alerts to clients and crews.", icon: "weather" },
+  { id: 2, name: "Low Stock Reorder Alerts", schedule: "Daily 6:00 AM", status: "active", lastRun: "Today 6:00 AM", description: "Scans inventory. Auto-sends reorder texts/emails to suppliers when items drop below minimum.", icon: "inventory" },
+  { id: 3, name: "Estimate Follow-Up Sequence", schedule: "Daily 9:00 AM", status: "active", lastRun: "Today 9:00 AM", description: "Sends follow-up on unsold estimates: Day 3 (text), Day 7 (email), Day 14 (call reminder).", icon: "dollar" },
+  { id: 4, name: "Google Review Requests", schedule: "48hrs post-completion", status: "active", lastRun: "Yesterday", description: "Sends SMS with direct Google review link 48hrs after job completion. Email follow-up if no response.", icon: "leads" },
+  { id: 5, name: "Maintenance Contract Renewal", schedule: "Monthly 1st", status: "active", lastRun: "Feb 1", description: "Checks sealcoating contracts due for renewal (every 2-3 years). Auto-generates renewal proposals.", icon: "projects" },
+  { id: 6, name: "Crew Scheduling Optimizer", schedule: "Daily 5:00 PM", status: "active", lastRun: "Today 5:00 PM", description: "AI-optimizes next-day crew assignments based on skills, location, certifications, and equipment needs.", icon: "people" },
+  { id: 7, name: "Equipment Maintenance Alerts", schedule: "Weekly Monday", status: "active", lastRun: "Feb 24", description: "Flags overdue maintenance. Sends reminders to fleet manager. Blocks dispatch of overdue units.", icon: "truck" },
+  { id: 8, name: "Invoice Payment Matching", schedule: "Every 4 hours", status: "active", lastRun: "1 hr ago", description: "Matches Stripe payments to invoices. Updates status. Sends receipts. Flags partial payments.", icon: "dollar" },
+  { id: 9, name: "Insurance & Cert Expiry", schedule: "Weekly Friday", status: "active", lastRun: "Feb 21", description: "Alerts on sub/crew insurance and certification expiry. Blocks assignment of expired personnel.", icon: "shield" },
+  { id: 10, name: "Daily Analytics Refresh", schedule: "Daily 12:00 AM", status: "active", lastRun: "Today 12:00 AM", description: "Refreshes dashboard metrics: revenue, crew performance, job completion rates, material usage.", icon: "analytics" },
+];
+
 // ─── ESTIMATES & BILLING VIEW ────────────────────────────
 const EstimatesView = ({ isMobile }) => {
   const [tab, setTab] = useState("estimates");
@@ -2496,6 +2587,139 @@ const EstimatesView = ({ isMobile }) => {
           </div>
         </Card>
       )}
+    </div>
+  );
+};
+
+
+// ─── ANALYTICS VIEW ──────────────────────────────────────
+const AnalyticsView = ({ isMobile }) => {
+  const [period, setPeriod] = useState("month");
+  const allProjects = [...PROJECTS, ...CLOSED_PROJECTS];
+  const totalRevenue = allProjects.reduce((s, p) => s + (p.spent || 0), 0);
+  const totalBudget = allProjects.reduce((s, p) => s + (p.budget || 0), 0);
+  const avgMargin = totalBudget > 0 ? Math.round(((totalBudget - totalRevenue) / totalBudget) * 100) : 0;
+  const completedJobs = CLOSED_PROJECTS.length;
+  const avgRating = CLOSED_PROJECTS.reduce((s, p) => s + (p.rating || 0), 0) / (completedJobs || 1);
+
+  const revenueByMonth = [
+    { month: "Sep", value: 28400 }, { month: "Oct", value: 41200 },
+    { month: "Nov", value: 35600 }, { month: "Dec", value: 20100 },
+    { month: "Jan", value: 29800 }, { month: "Feb", value: totalRevenue },
+  ];
+  const maxRev = Math.max(...revenueByMonth.map(r => r.value));
+
+  const crewPerformance = [
+    { crew: "Alpha Crew", jobs: 8, avgDays: 4.2, rating: 4.8, onTime: "94%", revenue: "$186K" },
+    { crew: "Bravo Crew", jobs: 6, avgDays: 5.1, rating: 4.5, onTime: "88%", revenue: "$142K" },
+  ];
+
+  return (
+    <div style={{ padding: isMobile ? 16 : 32, overflowY: "auto", height: "100vh" }}>
+      <SectionHeader title="Analytics & Reporting" subtitle="Revenue, crew performance, and job intelligence" />
+
+      <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
+        {["week", "month", "quarter", "year"].map(p => (
+          <Button key={p} variant={period === p ? "primary" : "secondary"} size="sm" onClick={() => setPeriod(p)}>
+            {p.charAt(0).toUpperCase() + p.slice(1)}
+          </Button>
+        ))}
+      </div>
+
+      {/* KPI Cards */}
+      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(5, 1fr)", gap: 10, marginBottom: 24 }}>
+        {[
+          { label: "Total Revenue", value: `$${(totalRevenue/1000).toFixed(0)}K`, color: COLORS.accent },
+          { label: "Pipeline Value", value: `$${(totalBudget/1000).toFixed(0)}K`, color: COLORS.success },
+          { label: "Avg Margin", value: `${avgMargin}%`, color: avgMargin > 15 ? COLORS.success : COLORS.warning },
+          { label: "Completed Jobs", value: String(completedJobs), color: COLORS.info },
+          { label: "Avg Rating", value: avgRating.toFixed(1) + " ★", color: COLORS.accent },
+        ].map((kpi, i) => (
+          <Card key={i} style={{ padding: 14, textAlign: "center" }}>
+            <div style={{ fontSize: 24, fontWeight: 700, fontFamily: FONTS.display, color: kpi.color }}>{kpi.value}</div>
+            <div style={{ fontSize: 10, color: COLORS.textMuted, fontFamily: FONTS.mono, letterSpacing: 1, textTransform: "uppercase", marginTop: 4 }}>{kpi.label}</div>
+          </Card>
+        ))}
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 20, marginBottom: 24 }}>
+        {/* Revenue Chart (Bar) */}
+        <Card>
+          <SectionHeader title="Revenue Trend" subtitle="Last 6 months" />
+          <div style={{ display: "flex", alignItems: "flex-end", gap: 8, height: 140, padding: "8px 0" }}>
+            {revenueByMonth.map((r, i) => (
+              <div key={i} style={{ flex: 1, textAlign: "center" }}>
+                <div style={{ fontSize: 10, fontFamily: FONTS.mono, color: COLORS.accent, marginBottom: 4 }}>
+                  ${(r.value/1000).toFixed(0)}K
+                </div>
+                <div style={{
+                  height: Math.round((r.value / maxRev) * 100), borderRadius: "6px 6px 0 0",
+                  background: `linear-gradient(180deg, ${COLORS.accent}, ${COLORS.accentDark})`,
+                  transition: "height 0.5s ease-out",
+                  animationDelay: `${i * 0.1}s`,
+                }} />
+                <div style={{ fontSize: 10, color: COLORS.textMuted, marginTop: 4, fontFamily: FONTS.mono }}>{r.month}</div>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        {/* Crew Performance */}
+        <Card>
+          <SectionHeader title="Crew Performance" subtitle="Job metrics by crew" />
+          {crewPerformance.map((c, i) => (
+            <div key={i} style={{
+              padding: 12, borderRadius: 8, background: COLORS.surface,
+              border: `1px solid ${COLORS.border}`, marginBottom: 8,
+            }}>
+              <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 8 }}>{c.crew}</div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 4, textAlign: "center" }}>
+                {[
+                  { l: "Jobs", v: c.jobs }, { l: "Avg Days", v: c.avgDays },
+                  { l: "Rating", v: c.rating + " ★" }, { l: "On Time", v: c.onTime }, { l: "Revenue", v: c.revenue },
+                ].map((m, j) => (
+                  <div key={j}>
+                    <div style={{ fontSize: 14, fontWeight: 700, fontFamily: FONTS.display, color: COLORS.accent }}>{m.v}</div>
+                    <div style={{ fontSize: 9, color: COLORS.textMuted, fontFamily: FONTS.mono }}>{m.l}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </Card>
+      </div>
+
+      {/* Job P&L Table */}
+      <Card>
+        <SectionHeader title="Job Profitability (P&L)" subtitle="Actual vs. estimated cost per completed job" />
+        <div style={{ overflowX: "auto" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <thead>
+              <tr style={{ borderBottom: `1px solid ${COLORS.border}` }}>
+                {["Project", "Budget", "Actual", "Margin", "Rating"].map(h => (
+                  <th key={h} style={{ padding: "10px 12px", textAlign: "left", fontSize: 10, fontFamily: FONTS.mono, letterSpacing: 1, color: COLORS.textMuted, textTransform: "uppercase" }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {CLOSED_PROJECTS.map((p, i) => {
+                const margin = p.budget > 0 ? Math.round(((p.budget - p.spent) / p.budget) * 100) : 0;
+                return (
+                  <tr key={p.id} style={{ borderBottom: `1px solid ${COLORS.border}20` }}>
+                    <td style={{ padding: "10px 12px", fontWeight: 600, fontSize: 13 }}>{p.name}</td>
+                    <td style={{ padding: "10px 12px", fontFamily: FONTS.mono, fontSize: 13 }}>${p.budget?.toLocaleString()}</td>
+                    <td style={{ padding: "10px 12px", fontFamily: FONTS.mono, fontSize: 13 }}>${p.spent?.toLocaleString()}</td>
+                    <td style={{ padding: "10px 12px" }}>
+                      <Badge color={margin > 15 ? COLORS.success : margin > 5 ? COLORS.warning : COLORS.danger} small>{margin}%</Badge>
+                    </td>
+                    <td style={{ padding: "10px 12px", color: COLORS.accent }}>{p.rating ? "★".repeat(p.rating) : "—"}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </Card>
     </div>
   );
 };
@@ -2827,6 +3051,155 @@ const LeadsView = ({ isMobile }) => {
   );
 };
 
+
+// ─── KNOWLEDGE BASE & AI ASSISTANT ───────────────────────
+const KnowledgeBaseView = ({ isMobile }) => {
+  const [kbTab, setKbTab] = useState("wiki");
+  const [searchQ, setSearchQ] = useState("");
+  const [selectedArticle, setSelectedArticle] = useState(null);
+  const [aiQuery, setAiQuery] = useState("");
+  const [aiHistory, setAiHistory] = useState([
+    { role: "assistant", text: "I'm Jane, your paving operations AI. Ask me about materials, pricing, safety procedures, weather requirements, or anything in the knowledge base." },
+  ]);
+  const categories = ["All", "Materials", "Safety", "Operations", "Pricing", "Training", "Equipment"];
+  const [catFilter, setCatFilter] = useState("All");
+
+  const filtered = KB_ARTICLES.filter(a =>
+    (catFilter === "All" || a.category === catFilter) &&
+    (searchQ === "" || a.title.toLowerCase().includes(searchQ.toLowerCase()) || a.tags.some(t => t.toLowerCase().includes(searchQ.toLowerCase())))
+  );
+
+  const handleAsk = () => {
+    if (!aiQuery.trim()) return;
+    setAiHistory(h => [...h, { role: "user", text: aiQuery }]);
+    // Simulate AI response
+    const q = aiQuery.toLowerCase();
+    let answer = "Let me look that up in the knowledge base...";
+    if (q.includes("temperature") || q.includes("temp")) answer = "Hot Mix Asphalt must be placed at 275-300°F. Ambient temperature must be at least 50°F and rising. Below 50°F, the mix cools too quickly for proper compaction. Today's forecast shows 52°F — you're good to pave.";
+    else if (q.includes("sealcoat")) answer = "Sealcoat should be applied at 50°F+ with no rain forecast for 24 hours. Two coats recommended for best results. Coverage rate: 50-80 sqft per gallon depending on surface condition. Your material cost is $3.75/gal.";
+    else if (q.includes("price") || q.includes("cost") || q.includes("charge")) answer = "Current pricing guidelines: Residential paving $4-8/sqft, Commercial $2.50-7/sqft, Sealcoating $0.20-0.50/sqft. Always maintain 15-20% margin on materials. HMA costs you $85/ton covering ~80sqft at 2\" depth.";
+    else if (q.includes("safety") || q.includes("osha") || q.includes("ppe")) answer = "OSHA requirements for paving: Hard hat, steel toe boots, hi-vis vest, safety glasses required at all times. Traffic control plan needed for public road work. Pre-shift equipment inspection is mandatory — use the digital checklist in the Equipment tab.";
+    else if (q.includes("weather")) answer = "Weather decision matrix: No paving below 50°F or if rain probability >30% in 4-hour window. Sealcoat needs 24-hour dry window. Looking at the forecast: Saturday and Sunday are rain days — schedule indoor work or non-paving tasks.";
+    setTimeout(() => setAiHistory(h => [...h, { role: "assistant", text: answer }]), 500);
+    setAiQuery("");
+  };
+
+  return (
+    <div style={{ padding: isMobile ? 16 : 32, overflowY: "auto", height: "100vh" }}>
+      <SectionHeader title="Knowledge Base & AI" subtitle="Operations wiki, training materials, and Jane AI assistant" />
+
+      <div style={{ display: "flex", gap: 0, marginBottom: 20, borderBottom: `1px solid ${COLORS.border}` }}>
+        {[["wiki", "Operations Wiki"], ["ai", "Jane AI Assistant"], ["training", "Training & Certs"]].map(([id, label]) => (
+          <button key={id} onClick={() => setKbTab(id)} style={{
+            padding: "10px 20px", border: "none", cursor: "pointer", background: "transparent",
+            fontFamily: FONTS.body, fontSize: 13, fontWeight: 500,
+            color: kbTab === id ? COLORS.accent : COLORS.textMuted,
+            borderBottom: kbTab === id ? `2px solid ${COLORS.accent}` : "2px solid transparent",
+          }}>{label}</button>
+        ))}
+      </div>
+
+      {kbTab === "wiki" && (
+        <>
+          <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
+            <input value={searchQ} onChange={e => setSearchQ(e.target.value)} placeholder="Search articles, tags..."
+              style={{ flex: 1, minWidth: 200, padding: "10px 14px", borderRadius: 8, border: `1px solid ${COLORS.border}`, background: COLORS.surface, color: COLORS.text, fontSize: 13, outline: "none" }} />
+          </div>
+          <div style={{ display: "flex", gap: 6, marginBottom: 16, flexWrap: "wrap" }}>
+            {categories.map(c => (
+              <Button key={c} variant={catFilter === c ? "primary" : "secondary"} size="sm" onClick={() => setCatFilter(c)}>{c}</Button>
+            ))}
+          </div>
+
+          {selectedArticle ? (
+            <Card>
+              <button onClick={() => setSelectedArticle(null)} style={{ background: "none", border: "none", color: COLORS.textMuted, fontSize: 13, cursor: "pointer", fontFamily: FONTS.body, marginBottom: 12 }}>← Back to articles</button>
+              <Badge color={COLORS.info} small>{selectedArticle.category}</Badge>
+              <h2 style={{ fontFamily: FONTS.display, fontSize: 20, fontWeight: 700, margin: "8px 0" }}>{selectedArticle.title}</h2>
+              <p style={{ fontSize: 14, color: COLORS.textSecondary, lineHeight: 1.7, marginBottom: 16 }}>{selectedArticle.summary}</p>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                {selectedArticle.tags.map(t => <Badge key={t} color={COLORS.textMuted} small>{t}</Badge>)}
+              </div>
+              <div style={{ fontSize: 11, color: COLORS.textMuted, marginTop: 12, fontFamily: FONTS.mono }}>Updated: {selectedArticle.updated}</div>
+            </Card>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {filtered.map(a => (
+                <Card key={a.id} style={{ padding: 14, cursor: "pointer" }} onClick={() => setSelectedArticle(a)}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: "flex", gap: 6, alignItems: "center", marginBottom: 4 }}>
+                        <Badge color={COLORS.info} small>{a.category}</Badge>
+                        <span style={{ fontSize: 10, color: COLORS.textMuted, fontFamily: FONTS.mono }}>{a.updated}</span>
+                      </div>
+                      <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 4 }}>{a.title}</div>
+                      <div style={{ fontSize: 12, color: COLORS.textSecondary, lineHeight: 1.5 }}>{a.summary.slice(0, 120)}...</div>
+                    </div>
+                    <Icon name="chevron" size={16} color={COLORS.textMuted} />
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+
+      {kbTab === "ai" && (
+        <div style={{ display: "flex", flexDirection: "column", height: isMobile ? "calc(100vh - 200px)" : "calc(100vh - 220px)" }}>
+          <div style={{ flex: 1, overflowY: "auto", marginBottom: 12 }}>
+            {aiHistory.map((msg, i) => (
+              <div key={i} style={{
+                display: "flex", gap: 10, marginBottom: 14,
+                flexDirection: msg.role === "user" ? "row-reverse" : "row",
+              }}>
+                <Avatar initials={msg.role === "user" ? "SC" : "J"} size={32}
+                  color={msg.role === "user" ? COLORS.info : COLORS.accent} />
+                <div style={{
+                  maxWidth: "75%", padding: "10px 14px", borderRadius: 12,
+                  background: msg.role === "user" ? `${COLORS.info}15` : COLORS.card,
+                  border: `1px solid ${msg.role === "user" ? COLORS.info + "30" : COLORS.border}`,
+                  fontSize: 13, lineHeight: 1.6, color: COLORS.text,
+                }}>{msg.text}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <input value={aiQuery} onChange={e => setAiQuery(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && handleAsk()}
+              placeholder="Ask Jane about materials, pricing, safety, weather..."
+              style={{ flex: 1, padding: "12px 16px", borderRadius: 10, border: `1px solid ${COLORS.border}`, background: COLORS.surface, color: COLORS.text, fontSize: 14, outline: "none" }} />
+            <Button onClick={handleAsk} icon="send">Ask</Button>
+          </div>
+        </div>
+      )}
+
+      {kbTab === "training" && (
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 12 }}>
+          {[
+            { title: "New Crew Onboarding", progress: 75, total: 12, done: 9, icon: "people", color: COLORS.info },
+            { title: "Equipment Certifications", progress: 60, total: 5, done: 3, icon: "truck", color: COLORS.accent },
+            { title: "Safety Training (OSHA)", progress: 100, total: 8, done: 8, icon: "shield", color: COLORS.success },
+            { title: "CDL Holders", progress: 40, total: 5, done: 2, icon: "tracking", color: COLORS.warning },
+          ].map((t, i) => (
+            <Card key={i}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+                <div style={{ padding: 8, borderRadius: 8, background: `${t.color}15` }}>
+                  <Icon name={t.icon} size={20} color={t.color} />
+                </div>
+                <div>
+                  <div style={{ fontWeight: 600, fontSize: 14 }}>{t.title}</div>
+                  <div style={{ fontSize: 11, color: COLORS.textMuted }}>{t.done} of {t.total} complete</div>
+                </div>
+              </div>
+              <ProgressBar value={t.progress} color={t.color} />
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 // ─── INTEGRATIONS VIEW (EMAIL / CALENDAR) ────────────────
 const IntegrationsView = ({ isMobile }) => {
   const [activeService, setActiveService] = useState(null);
@@ -3088,6 +3461,37 @@ const IntegrationsView = ({ isMobile }) => {
         </Card>
       </div>
 
+      {/* ─── Automation Engine ─── */}
+      <Card style={{ marginBottom: 20 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+          <div>
+            <h3 style={{ fontFamily: FONTS.display, fontSize: 16, fontWeight: 600 }}>Automation Engine</h3>
+            <p style={{ fontSize: 12, color: COLORS.textMuted }}>Cron-powered workflows running 24/7</p>
+          </div>
+          <Badge color={COLORS.success}>{AUTOMATIONS.filter(a => a.status === "active").length} Active</Badge>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          {AUTOMATIONS.map(a => (
+            <div key={a.id} style={{
+              display: "flex", alignItems: "center", gap: 12, padding: "10px 14px",
+              borderRadius: 8, background: COLORS.surface, border: `1px solid ${COLORS.border}`,
+            }}>
+              <div style={{ padding: 6, borderRadius: 6, background: `${COLORS.accent}15`, flexShrink: 0 }}>
+                <Icon name={a.icon} size={16} color={COLORS.accent} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontWeight: 600, fontSize: 13 }}>{a.name}</div>
+                <div style={{ fontSize: 11, color: COLORS.textMuted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.description}</div>
+              </div>
+              <div style={{ textAlign: "right", flexShrink: 0 }}>
+                <Badge color={COLORS.success} small>{a.status}</Badge>
+                <div style={{ fontSize: 10, color: COLORS.textMuted, fontFamily: FONTS.mono, marginTop: 2 }}>{a.schedule}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </Card>
+
       <div style={{ marginBottom: 32 }}>
         <div style={{ fontSize: 12, fontFamily: FONTS.mono, color: COLORS.textMuted, letterSpacing: 1, textTransform: "uppercase", marginBottom: 12 }}>API Configuration</div>
         <Card>
@@ -3181,6 +3585,12 @@ const VoiceAssistantFAB = ({ onCommand, isMobile }) => {
       else if (t.includes("lead") || t.includes("bid")) onCommand("leads");
       else if (t.includes("inventory") || t.includes("material")) onCommand("inventory");
       else if (t.includes("home") || t.includes("jane")) onCommand("home");
+      else if (t.includes("analytics") || t.includes("report") || t.includes("revenue")) onCommand("analytics");
+      else if (t.includes("knowledge") || t.includes("wiki") || t.includes("training") || t.includes("safety")) onCommand("knowledge");
+      else if (t.includes("command") || t.includes("dashboard") || t.includes("weather")) onCommand("command");
+      else if (t.includes("analytics") || t.includes("report")) onCommand("analytics");
+      else if (t.includes("knowledge") || t.includes("wiki") || t.includes("safety")) onCommand("knowledge");
+      else if (t.includes("command") || t.includes("dashboard") || t.includes("weather")) onCommand("command");
       else if (t.includes("setting") || t.includes("integration") || t.includes("phone")) onCommand("integrations");
     };
     recognition.onerror = () => setListening(false);
@@ -3244,19 +3654,22 @@ export default function App() {
     const props = { isMobile };
     switch (activeTab) {
       case "home": return <HomeView setActiveTab={handleNav} setSelectedProject={setSelectedProject} {...props} />;
+      case "command": return <DashboardView setActiveTab={handleNav} setSelectedProject={setSelectedProject} {...props} />;
       case "messages": return <MessagesView {...props} />;
       case "projects": return <ProjectsView selectedProject={selectedProject} setSelectedProject={setSelectedProject} {...props} />;
       case "projectmap": return <ProjectMapView {...props} />;
       case "estimates": return <EstimatesView {...props} />;
       case "inventory": return <InventoryView {...props} />;
       case "tracking": return <TrackingView {...props} />;
+      case "analytics": return <AnalyticsView {...props} />;
+      case "knowledge": return <KnowledgeBaseView {...props} />;
       case "leads": return <LeadsView {...props} />;
       case "integrations": return <IntegrationsView {...props} />;
       default: return <HomeView setActiveTab={handleNav} setSelectedProject={setSelectedProject} {...props} />;
     }
   };
 
-  const tabLabels = { home: "Home", messages: "Comms Portal", projects: "Projects", projectmap: "Project Map", estimates: "Estimates", inventory: "Inventory", tracking: "Fleet & Crew", leads: "Lead Intel", integrations: "Integrations" };
+  const tabLabels = { home: "Home", command: "Command Center", messages: "Comms Hub", projects: "Job Board", projectmap: "Project Map", estimates: "Financial Ops", inventory: "Materials", tracking: "Fleet & Crew", analytics: "Analytics", knowledge: "Knowledge Base", leads: "Lead Intel", integrations: "Integrations" };
 
   return (
     <ThemeContext.Provider value={{ isDark, toggle: toggleTheme }}>

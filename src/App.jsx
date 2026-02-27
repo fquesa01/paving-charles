@@ -1463,6 +1463,7 @@ const ProjectsView = ({ selectedProject, setSelectedProject, isMobile }) => {
   const [closedProjects] = useState(CLOSED_PROJECTS);
   const [projectTab, setProjectTab] = useState("active");
   const [showCreateProject, setShowCreateProject] = useState(false);
+  const [openStage, setOpenStage] = useState(null);
   const [newProject, setNewProject] = useState({ name: "", client: "", type: "Residential", location: "", crew: "Unassigned", budget: "", startDate: "", endDate: "" });
   const [newItem, setNewItem] = useState("");
 
@@ -1686,60 +1687,85 @@ const ProjectsView = ({ selectedProject, setSelectedProject, isMobile }) => {
         </Card>
       )}
 
-      {/* ─── KANBAN PIPELINE BOARD ─── */}
+      {/* ─── KANBAN PIPELINE BOARD (Accordion) ─── */}
       {projectTab === "kanban" && (
-        <div style={{
-          display: "flex", gap: 12, overflowX: "auto", paddingBottom: 16,
-          scrollSnapType: "x mandatory",
-        }}>
-          {kanbanCols.map(col => (
-            <div key={col.id} style={{
-              minWidth: isMobile ? 260 : 220, maxWidth: 280, flexShrink: 0,
-              scrollSnapAlign: "start",
-            }}>
-              {/* Column Header */}
-              <div style={{
-                display: "flex", alignItems: "center", gap: 8, padding: "10px 12px",
-                borderRadius: "10px 10px 0 0", background: `${col.color}12`,
-                borderBottom: `2px solid ${col.color}`,
-              }}>
-                <Icon name={col.icon} size={16} color={col.color} />
-                <span style={{ fontFamily: FONTS.display, fontSize: 12, fontWeight: 600, color: col.color, letterSpacing: 0.5 }}>{col.title}</span>
-                <span style={{
-                  marginLeft: "auto", background: `${col.color}20`, color: col.color,
-                  fontSize: 10, fontWeight: 700, padding: "1px 6px", borderRadius: 8, fontFamily: FONTS.mono,
-                }}>{col.items.length}</span>
-              </div>
-              {/* Column Cards */}
-              <div style={{
-                display: "flex", flexDirection: "column", gap: 6, padding: 6,
-                background: `${COLORS.surface}80`, borderRadius: "0 0 10px 10px",
-                minHeight: 120, border: `1px solid ${COLORS.border}`, borderTop: "none",
-              }}>
-                {col.items.length === 0 && (
-                  <div style={{ padding: 20, textAlign: "center", fontSize: 11, color: COLORS.textMuted, fontStyle: "italic" }}>No projects</div>
-                )}
-                {col.items.map(p => (
-                  <div key={p.id} onClick={() => setSelectedProject(p)} style={{
-                    padding: 10, borderRadius: 8, background: COLORS.card,
-                    border: `1px solid ${COLORS.border}`, cursor: "pointer",
-                    transition: "all 0.15s",
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          {kanbanCols.map(col => {
+            const isOpen = openStage === col.id;
+            return (
+              <div key={col.id}>
+                {/* Accordion Header */}
+                <button
+                  onClick={() => setOpenStage(isOpen ? null : col.id)}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 10, width: "100%",
+                    padding: "14px 16px", borderRadius: isOpen ? "10px 10px 0 0" : 10,
+                    border: `1px solid ${isOpen ? col.color : COLORS.border}`,
+                    borderBottom: isOpen ? `2px solid ${col.color}` : `1px solid ${isOpen ? col.color : COLORS.border}`,
+                    background: isOpen ? `${col.color}10` : COLORS.surface,
+                    cursor: "pointer", transition: "all 0.2s",
+                    fontFamily: FONTS.body, textAlign: "left",
                   }}
-                  onMouseEnter={e => e.currentTarget.style.borderColor = col.color}
-                  onMouseLeave={e => e.currentTarget.style.borderColor = COLORS.border}
-                  >
-                    <div style={{ fontWeight: 600, fontSize: 12, marginBottom: 4, lineHeight: 1.3 }}>{p.name}</div>
-                    <div style={{ fontSize: 10, color: COLORS.textMuted, marginBottom: 6 }}>{p.client}</div>
-                    {p.progress > 0 && p.progress < 100 && <ProgressBar value={p.progress} height={3} color={col.color} />}
-                    <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6, fontSize: 10 }}>
-                      <span style={{ color: COLORS.textMuted }}>{p.crew !== "Unassigned" ? p.crew : ""}</span>
-                      <span style={{ fontFamily: FONTS.mono, color: col.color, fontWeight: 600 }}>${p.budget?.toLocaleString()}</span>
-                    </div>
+                  onMouseEnter={e => { if (!isOpen) e.currentTarget.style.borderColor = col.color; }}
+                  onMouseLeave={e => { if (!isOpen) e.currentTarget.style.borderColor = COLORS.border; }}
+                >
+                  <Icon name={col.icon} size={18} color={col.color} />
+                  <span style={{ flex: 1, fontFamily: FONTS.display, fontSize: 14, fontWeight: 600, color: isOpen ? col.color : COLORS.text, letterSpacing: 0.3 }}>
+                    {col.title}
+                  </span>
+                  <span style={{
+                    background: `${col.color}20`, color: col.color,
+                    fontSize: 11, fontWeight: 700, padding: "2px 10px", borderRadius: 10, fontFamily: FONTS.mono,
+                    minWidth: 28, textAlign: "center",
+                  }}>{col.items.length}</span>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill={isOpen ? col.color : COLORS.textMuted}
+                    style={{ transition: "transform 0.2s", transform: isOpen ? "rotate(180deg)" : "rotate(0deg)" }}>
+                    <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6z" />
+                  </svg>
+                </button>
+
+                {/* Accordion Content */}
+                {isOpen && (
+                  <div style={{
+                    border: `1px solid ${col.color}40`, borderTop: "none",
+                    borderRadius: "0 0 10px 10px", padding: 10,
+                    background: `${COLORS.surface}80`,
+                    animation: "fadeIn 0.2s ease-out",
+                  }}>
+                    {col.items.length === 0 ? (
+                      <div style={{ padding: 20, textAlign: "center", fontSize: 12, color: COLORS.textMuted, fontStyle: "italic" }}>No projects in this stage</div>
+                    ) : (
+                      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 8 }}>
+                        {col.items.map(p => (
+                          <div key={p.id} onClick={() => setSelectedProject(p)} style={{
+                            padding: 14, borderRadius: 8, background: COLORS.card,
+                            border: `1px solid ${COLORS.border}`, cursor: "pointer",
+                            transition: "all 0.15s",
+                          }}
+                          onMouseEnter={e => e.currentTarget.style.borderColor = col.color}
+                          onMouseLeave={e => e.currentTarget.style.borderColor = COLORS.border}
+                          >
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
+                              <div style={{ fontWeight: 600, fontSize: 13, lineHeight: 1.3 }}>{p.name}</div>
+                              <span style={{ fontFamily: FONTS.mono, fontSize: 10, color: COLORS.textMuted, flexShrink: 0, marginLeft: 8 }}>{p.id}</span>
+                            </div>
+                            <div style={{ fontSize: 11, color: COLORS.textMuted, marginBottom: 6 }}>{p.client}</div>
+                            {p.progress > 0 && p.progress < 100 && (
+                              <div style={{ marginBottom: 6 }}><ProgressBar value={p.progress} height={4} color={col.color} /></div>
+                            )}
+                            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11 }}>
+                              <span style={{ color: COLORS.textMuted }}>{p.crew !== "Unassigned" ? `${p.crew} Crew` : ""}</span>
+                              <span style={{ fontFamily: FONTS.mono, color: col.color, fontWeight: 700 }}>${p.budget?.toLocaleString()}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                ))}
+                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 

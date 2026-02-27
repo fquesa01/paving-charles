@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback, useRef, useMemo, createContext, useCo
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png",
@@ -144,11 +143,11 @@ const PROJECTS = [
 ];
 
 const INVENTORY = [
-  { id: 1, name: "Hot Mix Asphalt (HMA)", unit: "tons", qty: 145, minQty: 50, category: "Materials", cost: 85 },
-  { id: 2, name: "Cold Patch Mix", unit: "bags", qty: 220, minQty: 100, category: "Materials", cost: 12 },
-  { id: 3, name: "Tack Coat Emulsion", unit: "gallons", qty: 380, minQty: 150, category: "Materials", cost: 4.5 },
-  { id: 4, name: "Sealcoat", unit: "gallons", qty: 520, minQty: 200, category: "Materials", cost: 3.75 },
-  { id: 5, name: "Crushed Aggregate Base", unit: "tons", qty: 88, minQty: 30, category: "Materials", cost: 28 },
+  { id: 1, name: "Hot Mix Asphalt (HMA)", unit: "tons", qty: 145, minQty: 50, category: "Materials", cost: 85, supplier: "Martin Supply Co.", supplierEmail: "orders@martinsupply.com", coveragePer: "1 ton = ~80 sqft at 2\" depth" },
+  { id: 2, name: "Cold Patch Mix", unit: "bags", qty: 220, minQty: 100, category: "Materials", cost: 12, supplier: "Martin Supply Co.", supplierEmail: "orders@martinsupply.com", coveragePer: "1 bag = ~4 sqft patch" },
+  { id: 3, name: "Tack Coat Emulsion", unit: "gallons", qty: 380, minQty: 150, category: "Materials", cost: 4.5, supplier: "Midwest Sealcoat", supplierEmail: "dispatch@mwseal.com", coveragePer: "1 gal = ~55 sqft" },
+  { id: 4, name: "Sealcoat", unit: "gallons", qty: 520, minQty: 200, category: "Materials", cost: 3.75, supplier: "Midwest Sealcoat", supplierEmail: "dispatch@mwseal.com", coveragePer: "1 gal = ~50 sqft" },
+  { id: 5, name: "Crushed Aggregate Base", unit: "tons", qty: 88, minQty: 30, category: "Materials", cost: 28, supplier: "Martin Supply Co.", supplierEmail: "orders@martinsupply.com", coveragePer: "1 ton = ~100 sqft at 4\" depth" },
   { id: 6, name: "Edge Forms (10ft)", unit: "pieces", qty: 45, minQty: 20, category: "Materials", cost: 22 },
   { id: 7, name: "Crack Filler", unit: "gallons", qty: 65, minQty: 25, category: "Materials", cost: 18 },
   { id: 8, name: "Striping Paint (White)", unit: "gallons", qty: 30, minQty: 15, category: "Materials", cost: 32 },
@@ -160,6 +159,17 @@ const INVENTORY = [
   { id: 14, name: "Safety Vests", unit: "units", qty: 35, minQty: 20, category: "Safety", cost: 15 },
 ];
 
+const CONTACTS = [
+  ...EMPLOYEES.map(e => ({ ...e, type: "employee" })),
+  { id: 101, name: "Mr. Johnson", role: "Homeowner", type: "client", avatar: "MJ", status: "active", phone: "317-555-0333", project: "P-1001" },
+  { id: 102, name: "Linda Park", role: "Property Manager", type: "client", avatar: "LP", status: "active", phone: "614-555-0444", project: "P-1002", company: "Oak Park Shopping Center" },
+  { id: 103, name: "James Howard", role: "HOA President", type: "client", avatar: "JH", status: "active", phone: "937-555-0321", project: "P-1003", company: "Maple Grove HOA" },
+  { id: 104, name: "Dave Muller", role: "DOT Project Mgr", type: "client", avatar: "DM", status: "active", phone: "317-555-0111", project: "P-1004", company: "Marion County DOT" },
+  { id: 201, name: "Martin Supply Co.", role: "Asphalt & Aggregate", type: "vendor", avatar: "MS", status: "active", phone: "317-555-0777", email: "orders@martinsupply.com" },
+  { id: 202, name: "Midwest Sealcoat", role: "Sealcoat & Coatings", type: "vendor", avatar: "MW", status: "active", phone: "317-555-0888", email: "dispatch@mwseal.com" },
+  { id: 203, name: "SafetyFirst Rentals", role: "Equipment & Safety", type: "vendor", avatar: "SF", status: "active", phone: "614-555-0999", email: "sales@safetyfirst.com" },
+];
+
 const MESSAGES = [
   { id: 1, channel: "alpha-crew", user: "Marcus Rivera", avatar: "MR", text: "On site at Elm Street. Setting up for edge forms today.", time: "7:42 AM", project: "P-1001" },
   { id: 2, channel: "alpha-crew", user: "Jake Thompson", avatar: "JT", text: "Copy that. Dump truck is 20 min out with the forms.", time: "7:45 AM", project: "P-1001" },
@@ -169,6 +179,13 @@ const MESSAGES = [
   { id: 6, channel: "management", user: "Sarah Chen", avatar: "SC", text: "Maple Grove HOA wants to schedule a site visit for next Tuesday. Anyone available?", time: "8:30 AM", project: "P-1003" },
   { id: 7, channel: "management", user: "Raj Patel", avatar: "RP", text: "I can do the site visit. I'll prepare the estimate template.", time: "8:35 AM", project: "P-1003" },
   { id: 8, channel: "alpha-crew", user: "Marcus Rivera", avatar: "MR", text: "Edge forms are being installed now. Should be done by lunch.", time: "9:12 AM", project: "P-1001" },
+  { id: 9, channel: "dm-101", user: "Mr. Johnson", avatar: "MJ", text: "Hi Sarah, any update on when the edge forms will be in?", time: "8:00 AM", project: "P-1001" },
+  { id: 10, channel: "dm-101", user: "Sarah Chen", avatar: "SC", text: "Good morning! Forms are being delivered today. Crew should have them installed by this afternoon.", time: "8:22 AM", project: "P-1001" },
+  { id: 11, channel: "dm-101", user: "Mr. Johnson", avatar: "MJ", text: "Great, thanks for the quick update!", time: "8:25 AM", project: "P-1001" },
+  { id: 12, channel: "dm-102", user: "Linda Park", avatar: "LP", text: "When do you expect to start the sealcoat phase? The tenants need advance notice.", time: "Yesterday", project: "P-1002" },
+  { id: 13, channel: "dm-102", user: "Sarah Chen", avatar: "SC", text: "Sealcoat is scheduled for next week. I'll send you a formal timeline update today.", time: "Yesterday", project: "P-1002" },
+  { id: 14, channel: "dm-201", user: "Martin Supply Co.", avatar: "MS", text: "Order #4521 shipped: 12 tons HMA. ETA tomorrow 7 AM to Elm St job site.", time: "Yesterday" },
+  { id: 15, channel: "dm-201", user: "Sarah Chen", avatar: "SC", text: "Perfect, Marcus will be on site to receive. Thanks Dave.", time: "Yesterday" },
 ];
 
 const LEADS = [
@@ -1198,14 +1215,18 @@ const MessagesView = ({ isMobile }) => {
   const [messages, setMessages] = useState(MESSAGES);
   const [newMessage, setNewMessage] = useState("");
   const [showChannelList, setShowChannelList] = useState(!isMobile);
+  const [showClientUpdate, setShowClientUpdate] = useState(false);
   const messagesEndRef = useRef(null);
 
   const channels = [
-    { id: "alpha-crew", name: "Alpha Crew", members: 3, unread: 2 },
-    { id: "bravo-crew", name: "Bravo Crew", members: 2, unread: 1 },
-    { id: "management", name: "Management", members: 3, unread: 0 },
-    { id: "all-hands", name: "All Hands", members: 8, unread: 0 },
+    { id: "alpha-crew", name: "Alpha Crew", members: 3, unread: 2, type: "channel" },
+    { id: "bravo-crew", name: "Bravo Crew", members: 2, unread: 1, type: "channel" },
+    { id: "management", name: "Management", members: 3, unread: 0, type: "channel" },
+    { id: "all-hands", name: "All Hands", members: 8, unread: 0, type: "channel" },
   ];
+  const clientDMs = CONTACTS.filter(c => c.type === "client");
+  const vendorDMs = CONTACTS.filter(c => c.type === "vendor");
+  const activeContact = [...clientDMs, ...vendorDMs].find(c => activeChannel === `dm-${c.id}`);
 
   const filteredMessages = messages.filter(m => m.channel === activeChannel);
 
@@ -1252,7 +1273,33 @@ const MessagesView = ({ isMobile }) => {
             )}
           </button>
         ))}
-        <div style={{ fontSize: 10, color: COLORS.textMuted, fontFamily: FONTS.mono, letterSpacing: 1, padding: "16px 10px 8px", textTransform: "uppercase" }}>Direct Messages</div>
+        <div style={{ fontSize: 10, color: COLORS.textMuted, fontFamily: FONTS.mono, letterSpacing: 1, padding: "16px 10px 8px", textTransform: "uppercase" }}>Clients</div>
+        {clientDMs.map(c => (
+          <button key={c.id} onClick={() => handleChannelSelect(`dm-${c.id}`)} style={{
+            display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "8px 12px",
+            borderRadius: 8, border: "none", cursor: "pointer",
+            background: activeChannel === `dm-${c.id}` ? `${COLORS.accent}15` : "transparent",
+            color: activeChannel === `dm-${c.id}` ? COLORS.accent : COLORS.textSecondary,
+            fontFamily: FONTS.body, fontSize: 13, textAlign: "left",
+          }}>
+            <Avatar initials={c.avatar} size={24} color={COLORS.success} />
+            <div><div>{c.name}</div><div style={{ fontSize: 10, color: COLORS.textMuted }}>{c.role}</div></div>
+          </button>
+        ))}
+        <div style={{ fontSize: 10, color: COLORS.textMuted, fontFamily: FONTS.mono, letterSpacing: 1, padding: "16px 10px 8px", textTransform: "uppercase" }}>Vendors & Suppliers</div>
+        {vendorDMs.map(c => (
+          <button key={c.id} onClick={() => handleChannelSelect(`dm-${c.id}`)} style={{
+            display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "8px 12px",
+            borderRadius: 8, border: "none", cursor: "pointer",
+            background: activeChannel === `dm-${c.id}` ? `${COLORS.accent}15` : "transparent",
+            color: activeChannel === `dm-${c.id}` ? COLORS.accent : COLORS.textSecondary,
+            fontFamily: FONTS.body, fontSize: 13, textAlign: "left",
+          }}>
+            <Avatar initials={c.avatar} size={24} color={COLORS.info} />
+            <div><div>{c.name}</div><div style={{ fontSize: 10, color: COLORS.textMuted }}>{c.role}</div></div>
+          </button>
+        ))}
+        <div style={{ fontSize: 10, color: COLORS.textMuted, fontFamily: FONTS.mono, letterSpacing: 1, padding: "16px 10px 8px", textTransform: "uppercase" }}>Team</div>
         {EMPLOYEES.slice(0, 4).map(emp => (
           <button key={emp.id} style={{
             display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "8px 12px",
@@ -1280,8 +1327,12 @@ const MessagesView = ({ isMobile }) => {
             </button>
           )}
           <div>
-            <h3 style={{ fontFamily: FONTS.display, fontSize: 16, fontWeight: 600 }}>#{channels.find(c => c.id === activeChannel)?.name}</h3>
-            <span style={{ fontSize: 11, color: COLORS.textMuted }}>{channels.find(c => c.id === activeChannel)?.members} members</span>
+            <h3 style={{ fontFamily: FONTS.display, fontSize: 16, fontWeight: 600 }}>
+              {activeContact ? activeContact.name : `#${channels.find(c => c.id === activeChannel)?.name}`}
+            </h3>
+            <span style={{ fontSize: 11, color: COLORS.textMuted }}>
+              {activeContact ? `${activeContact.role}${activeContact.company ? ` · ${activeContact.company}` : ""}` : `${channels.find(c => c.id === activeChannel)?.members} members`}
+            </span>
           </div>
         </div>
         {!isMobile && <div style={{ display: "flex", gap: 8 }}>
@@ -1310,13 +1361,87 @@ const MessagesView = ({ isMobile }) => {
         <div ref={messagesEndRef} />
       </div>
 
+      {/* Auto Client Update Panel */}
+      {activeContact && activeContact.type === "client" && showClientUpdate && (
+        <div style={{ padding: "16px 24px", borderTop: `1px solid ${COLORS.accent}30`, background: `${COLORS.accent}05` }}>
+          <div style={{ fontSize: 11, fontFamily: FONTS.mono, color: COLORS.accent, letterSpacing: 1, textTransform: "uppercase", marginBottom: 10 }}>Professional Client Update Preview</div>
+          <div style={{
+            borderRadius: 12, overflow: "hidden", border: `1px solid ${COLORS.border}`,
+            background: COLORS.card, marginBottom: 12,
+          }}>
+            {/* Update Header */}
+            <div style={{ padding: "16px 20px", background: `linear-gradient(135deg, ${COLORS.accent}, ${COLORS.accentDark})`, color: "#000" }}>
+              <div style={{ fontFamily: FONTS.display, fontSize: 16, fontWeight: 700 }}>PAVING 123 · PROJECT UPDATE</div>
+              <div style={{ fontSize: 12, marginTop: 2, opacity: 0.8 }}>{new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</div>
+            </div>
+            {/* Update Body */}
+            <div style={{ padding: "16px 20px" }}>
+              <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 4 }}>
+                {PROJECTS.find(p => p.id === activeContact.project)?.name || "Project Update"}
+              </div>
+              <div style={{ fontSize: 12, color: COLORS.textMuted, marginBottom: 12 }}>
+                Client: {activeContact.name} · {activeContact.company || ""}
+              </div>
+              {/* Progress */}
+              <div style={{ marginBottom: 12 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 4 }}>
+                  <span>Overall Progress</span>
+                  <span style={{ fontWeight: 600, color: COLORS.accent }}>{PROJECTS.find(p => p.id === activeContact.project)?.progress || 0}%</span>
+                </div>
+                <ProgressBar value={PROJECTS.find(p => p.id === activeContact.project)?.progress || 0} height={8} />
+              </div>
+              {/* Recent milestones */}
+              <div style={{ fontSize: 12, fontFamily: FONTS.mono, color: COLORS.textMuted, letterSpacing: 1, textTransform: "uppercase", marginBottom: 6 }}>Completed This Week</div>
+              {(PROJECTS.find(p => p.id === activeContact.project)?.checklist || []).filter(c => c.done).slice(-3).map((c, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: COLORS.success, marginBottom: 2 }}>
+                  <Icon name="check" size={12} color={COLORS.success} /> {c.text}
+                </div>
+              ))}
+              {/* Next steps */}
+              <div style={{ fontSize: 12, fontFamily: FONTS.mono, color: COLORS.textMuted, letterSpacing: 1, textTransform: "uppercase", marginTop: 10, marginBottom: 6 }}>Up Next</div>
+              {(PROJECTS.find(p => p.id === activeContact.project)?.checklist || []).filter(c => !c.done).slice(0, 3).map((c, i) => (
+                <div key={i} style={{ fontSize: 12, color: COLORS.textSecondary, marginBottom: 2 }}>• {c.text}</div>
+              ))}
+              {/* Photo placeholder */}
+              <div style={{
+                marginTop: 12, height: 80, borderRadius: 8,
+                background: `linear-gradient(135deg, ${COLORS.asphalt}, ${COLORS.surface})`,
+                border: `1px solid ${COLORS.border}`, display: "flex", alignItems: "center",
+                justifyContent: "center", color: COLORS.textMuted, fontSize: 12, gap: 6,
+              }}>
+                <Icon name="photo" size={16} color={COLORS.textMuted} /> Site photo will be attached
+              </div>
+            </div>
+            <div style={{ padding: "12px 20px", borderTop: `1px solid ${COLORS.border}`, fontSize: 10, color: COLORS.textMuted, textAlign: "center" }}>
+              Paving 123 · Licensed & Insured · paving123.com
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <Button size="sm" icon="send">Send via Text</Button>
+            <Button size="sm" icon="email" variant="ghost">Send via Email</Button>
+            <Button size="sm" icon="photo" variant="ghost">Attach Photo</Button>
+            <Button size="sm" variant="ghost" onClick={() => setShowClientUpdate(false)}>Cancel</Button>
+          </div>
+        </div>
+      )}
+
       <div style={{ padding: isMobile ? "12px 16px" : "16px 24px", borderTop: `1px solid ${COLORS.border}` }}>
+        {activeContact && activeContact.type === "client" && !showClientUpdate && (
+          <button onClick={() => setShowClientUpdate(true)} style={{
+            display: "flex", alignItems: "center", gap: 6, marginBottom: 8, padding: "6px 12px",
+            borderRadius: 8, border: `1px solid ${COLORS.accent}40`,
+            background: `${COLORS.accent}10`, color: COLORS.accent,
+            fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONTS.body,
+          }}>
+            <Icon name="send" size={14} color={COLORS.accent} /> Send Professional Project Update
+          </button>
+        )}
         <div style={{ display: "flex", gap: 8 }}>
           <input
             value={newMessage}
             onChange={e => setNewMessage(e.target.value)}
             onKeyDown={e => e.key === "Enter" && sendMessage()}
-            placeholder={`Message #${channels.find(c => c.id === activeChannel)?.name}...`}
+            placeholder={activeContact ? `Message ${activeContact.name}...` : `Message #${channels.find(c => c.id === activeChannel)?.name}...`}
             style={{
               flex: 1, padding: "10px 14px", borderRadius: 8, border: `1px solid ${COLORS.border}`,
               background: COLORS.surface, color: COLORS.text, fontSize: 14, outline: "none",
@@ -1491,54 +1616,206 @@ const ProjectsView = ({ selectedProject, setSelectedProject, isMobile }) => {
     );
   }
 
+  const allKanbanProjects = [...projects, ...closedProjects];
+  const kanbanCols = [
+    { id: "estimate", title: "Estimate Sent", color: COLORS.textMuted, icon: "dollar",
+      items: allKanbanProjects.filter(p => p.status === "bidding") },
+    { id: "signed", title: "Contract Signed", color: COLORS.info, icon: "projects",
+      items: allKanbanProjects.filter(p => p.status === "in-progress" && p.progress === 0) },
+    { id: "deposit", title: "Deposit Received", color: "#8B5CF6", icon: "money",
+      items: allKanbanProjects.filter(p => p.status === "in-progress" && p.progress > 0 && p.progress <= 15) },
+    { id: "demo", title: "Demolition & Prep", color: COLORS.warning, icon: "truck",
+      items: allKanbanProjects.filter(p => p.status === "in-progress" && p.progress > 15 && p.progress <= 35) },
+    { id: "grading", title: "Grading & Sub-Base", color: "#EC4899", icon: "tracking",
+      items: allKanbanProjects.filter(p => p.status === "in-progress" && p.progress > 35 && p.progress <= 55) },
+    { id: "paving", title: "Laying Asphalt", color: COLORS.accent, icon: "inventory",
+      items: allKanbanProjects.filter(p => p.status === "in-progress" && p.progress > 55 && p.progress <= 80) },
+    { id: "finishing", title: "Finishing & Sealcoat", color: COLORS.info, icon: "edit",
+      items: allKanbanProjects.filter(p => p.status === "in-progress" && p.progress > 80 && p.progress < 100) },
+    { id: "complete", title: "Completed", color: COLORS.success, icon: "check",
+      items: allKanbanProjects.filter(p => p.status === "completed").slice(0, 6) },
+  ];
+
   return (
     <div style={{ padding: isMobile ? 16 : 32, overflowY: "auto", height: "100vh" }}>
-      <SectionHeader title="Project Management" subtitle="All active, bidding, and completed projects"
-        action={<Button icon="add">New Project</Button>} />
+      <SectionHeader title="Projects" subtitle={`${projects.length} active · ${closedProjects.length} closed`}
+        action={<Button icon="add" onClick={() => setShowCreateProject(!showCreateProject)}>{showCreateProject ? "Cancel" : "New Project"}</Button>} />
 
-      <div style={{ display: "flex", gap: 8, marginBottom: 24 }}>
-        {["All", "In Progress", "Bidding", "Completed"].map(filter => (
-          <Button key={filter} variant="secondary" size="sm">{filter}</Button>
+      {/* View Tabs */}
+      <div style={{ display: "flex", gap: 0, marginBottom: 20, borderBottom: `1px solid ${COLORS.border}` }}>
+        {[["active", "Active & Bidding"], ["kanban", "Pipeline Board"], ["closed", `Closed (${closedProjects.length})`]].map(([id, label]) => (
+          <button key={id} onClick={() => setProjectTab(id)} style={{
+            padding: "10px 20px", border: "none", cursor: "pointer",
+            background: "transparent", fontFamily: FONTS.body, fontSize: 13, fontWeight: 500,
+            color: projectTab === id ? COLORS.accent : COLORS.textMuted,
+            borderBottom: projectTab === id ? `2px solid ${COLORS.accent}` : "2px solid transparent",
+          }}>{label}</button>
         ))}
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: isMobile ? 10 : 16 }}>
-        {projects.map((p, i) => {
-          const completed = p.checklist.filter(c => c.done).length;
-          const total = p.checklist.length;
-          return (
-            <Card key={p.id} className="hover-lift" onClick={() => setSelectedProject(p)}
-              style={{ cursor: "pointer", animationDelay: `${i * 0.08}s` }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
-                <div>
-                  <Badge color={statusColors[p.status]} small>{p.status}</Badge>
-                  <h3 style={{ fontFamily: FONTS.display, fontSize: 18, fontWeight: 600, marginTop: 8 }}>{p.name}</h3>
-                  <div style={{ fontSize: 12, color: COLORS.textMuted, marginTop: 4 }}>{p.client} • {p.type}</div>
-                </div>
-                <div style={{ fontFamily: FONTS.mono, fontSize: 11, color: COLORS.textMuted }}>{p.id}</div>
+      {/* Create Project Form */}
+      {showCreateProject && (
+        <Card style={{ marginBottom: 20, border: `1px solid ${COLORS.accent}30` }}>
+          <h3 style={{ fontFamily: FONTS.display, fontSize: 16, fontWeight: 600, marginBottom: 16 }}>New Project</h3>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 12, marginBottom: 12 }}>
+            {[["name","Project Name","text"],["client","Client Name","text"],["location","Address / Location","text"],["budget","Budget ($)","number"],["startDate","Start Date","date"],["endDate","End Date","date"]].map(([key,label,type]) => (
+              <div key={key}>
+                <div style={{ fontSize: 11, color: COLORS.textMuted, marginBottom: 4, fontFamily: FONTS.mono }}>{label}</div>
+                <input type={type} value={newProject[key]} onChange={e => setNewProject({...newProject, [key]: e.target.value})}
+                  style={{ width: "100%", padding: "10px 14px", borderRadius: 8, border: `1px solid ${COLORS.border}`, background: COLORS.surface, color: COLORS.text, fontSize: 14, outline: "none" }} />
               </div>
-              <div style={{ fontSize: 12, color: COLORS.textMuted, marginBottom: 12 }}>📍 {p.location}</div>
-              {total > 0 && (
-                <div>
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 6 }}>
-                    <span style={{ color: COLORS.textMuted }}>{completed}/{total} tasks</span>
-                    <span style={{ color: COLORS.accent, fontWeight: 600 }}>{Math.round((completed / total) * 100)}%</span>
+            ))}
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
+            <div>
+              <div style={{ fontSize: 11, color: COLORS.textMuted, marginBottom: 4, fontFamily: FONTS.mono }}>Type</div>
+              <select value={newProject.type} onChange={e => setNewProject({...newProject, type: e.target.value})}
+                style={{ width: "100%", padding: "10px 14px", borderRadius: 8, border: `1px solid ${COLORS.border}`, background: COLORS.surface, color: COLORS.text, fontSize: 14 }}>
+                <option>Residential</option><option>Commercial</option><option>Municipal</option>
+              </select>
+            </div>
+            <div>
+              <div style={{ fontSize: 11, color: COLORS.textMuted, marginBottom: 4, fontFamily: FONTS.mono }}>Crew</div>
+              <select value={newProject.crew} onChange={e => setNewProject({...newProject, crew: e.target.value})}
+                style={{ width: "100%", padding: "10px 14px", borderRadius: 8, border: `1px solid ${COLORS.border}`, background: COLORS.surface, color: COLORS.text, fontSize: 14 }}>
+                <option>Unassigned</option><option>Alpha</option><option>Bravo</option>
+              </select>
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+            <Button variant="ghost" onClick={() => setShowCreateProject(false)}>Cancel</Button>
+            <Button onClick={createProject}>Create Project</Button>
+          </div>
+        </Card>
+      )}
+
+      {/* ─── KANBAN PIPELINE BOARD ─── */}
+      {projectTab === "kanban" && (
+        <div style={{
+          display: "flex", gap: 12, overflowX: "auto", paddingBottom: 16,
+          scrollSnapType: "x mandatory",
+        }}>
+          {kanbanCols.map(col => (
+            <div key={col.id} style={{
+              minWidth: isMobile ? 260 : 220, maxWidth: 280, flexShrink: 0,
+              scrollSnapAlign: "start",
+            }}>
+              {/* Column Header */}
+              <div style={{
+                display: "flex", alignItems: "center", gap: 8, padding: "10px 12px",
+                borderRadius: "10px 10px 0 0", background: `${col.color}12`,
+                borderBottom: `2px solid ${col.color}`,
+              }}>
+                <Icon name={col.icon} size={16} color={col.color} />
+                <span style={{ fontFamily: FONTS.display, fontSize: 12, fontWeight: 600, color: col.color, letterSpacing: 0.5 }}>{col.title}</span>
+                <span style={{
+                  marginLeft: "auto", background: `${col.color}20`, color: col.color,
+                  fontSize: 10, fontWeight: 700, padding: "1px 6px", borderRadius: 8, fontFamily: FONTS.mono,
+                }}>{col.items.length}</span>
+              </div>
+              {/* Column Cards */}
+              <div style={{
+                display: "flex", flexDirection: "column", gap: 6, padding: 6,
+                background: `${COLORS.surface}80`, borderRadius: "0 0 10px 10px",
+                minHeight: 120, border: `1px solid ${COLORS.border}`, borderTop: "none",
+              }}>
+                {col.items.length === 0 && (
+                  <div style={{ padding: 20, textAlign: "center", fontSize: 11, color: COLORS.textMuted, fontStyle: "italic" }}>No projects</div>
+                )}
+                {col.items.map(p => (
+                  <div key={p.id} onClick={() => setSelectedProject(p)} style={{
+                    padding: 10, borderRadius: 8, background: COLORS.card,
+                    border: `1px solid ${COLORS.border}`, cursor: "pointer",
+                    transition: "all 0.15s",
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.borderColor = col.color}
+                  onMouseLeave={e => e.currentTarget.style.borderColor = COLORS.border}
+                  >
+                    <div style={{ fontWeight: 600, fontSize: 12, marginBottom: 4, lineHeight: 1.3 }}>{p.name}</div>
+                    <div style={{ fontSize: 10, color: COLORS.textMuted, marginBottom: 6 }}>{p.client}</div>
+                    {p.progress > 0 && p.progress < 100 && <ProgressBar value={p.progress} height={3} color={col.color} />}
+                    <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6, fontSize: 10 }}>
+                      <span style={{ color: COLORS.textMuted }}>{p.crew !== "Unassigned" ? p.crew : ""}</span>
+                      <span style={{ fontFamily: FONTS.mono, color: col.color, fontWeight: 600 }}>${p.budget?.toLocaleString()}</span>
+                    </div>
                   </div>
-                  <ProgressBar value={(completed / total) * 100} />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* ─── CLOSED PROJECTS ─── */}
+      {projectTab === "closed" && (
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 12 }}>
+          {closedProjects.map(p => (
+            <Card key={p.id} style={{ cursor: "pointer" }} onClick={() => setSelectedProject(p)}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
+                <div>
+                  <div style={{ fontFamily: FONTS.mono, fontSize: 10, color: COLORS.textMuted }}>{p.id}</div>
+                  <div style={{ fontWeight: 600, fontSize: 14, marginTop: 2 }}>{p.name}</div>
+                </div>
+                <Badge color={COLORS.success} small>Completed</Badge>
+              </div>
+              <div style={{ fontSize: 12, color: COLORS.textSecondary, marginBottom: 4 }}>{p.client}</div>
+              <div style={{ fontSize: 11, color: COLORS.textMuted }}>{p.location}</div>
+              <div style={{ display: "flex", justifyContent: "space-between", marginTop: 10, fontSize: 12 }}>
+                <span style={{ color: COLORS.textMuted }}>{p.startDate} → {p.endDate}</span>
+                <span style={{ fontFamily: FONTS.mono, fontWeight: 600, color: COLORS.success }}>${p.spent?.toLocaleString()}</span>
+              </div>
+              {p.invoicePaid === false && <Badge color={COLORS.danger} small>Invoice unpaid</Badge>}
+              {p.rating && (
+                <div style={{ marginTop: 6 }}>
+                  {"★★★★★".slice(0, p.rating).split("").map((s, i) => <span key={i} style={{ color: COLORS.accent }}>{s}</span>)}
+                  {"★★★★★".slice(0, 5 - p.rating).split("").map((s, i) => <span key={i} style={{ color: COLORS.border }}>{s}</span>)}
                 </div>
               )}
-              <div style={{ display: "flex", justifyContent: "space-between", marginTop: 12, paddingTop: 12, borderTop: `1px solid ${COLORS.border}` }}>
-                <span style={{ fontSize: 12, color: COLORS.textMuted }}>
-                  {p.crew !== "Unassigned" ? `${p.crew} Crew` : "Unassigned"}
-                </span>
-                <span style={{ fontSize: 14, fontWeight: 700, fontFamily: FONTS.display, color: COLORS.accent }}>
-                  ${p.budget?.toLocaleString()}
-                </span>
-              </div>
             </Card>
-          );
-        })}
-      </div>
+          ))}
+        </div>
+      )}
+
+      {/* ─── ACTIVE PROJECTS LIST ─── */}
+      {projectTab === "active" && (
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: isMobile ? 10 : 16 }}>
+          {projects.map((p, i) => {
+            const completed = p.checklist.filter(c => c.done).length;
+            const total = p.checklist.length;
+            return (
+              <Card key={p.id} className="hover-lift" onClick={() => setSelectedProject(p)}
+                style={{ cursor: "pointer", animationDelay: `${i * 0.08}s` }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
+                  <div>
+                    <Badge color={statusColors[p.status]} small>{p.status}</Badge>
+                    <h3 style={{ fontFamily: FONTS.display, fontSize: 18, fontWeight: 600, marginTop: 8 }}>{p.name}</h3>
+                    <div style={{ fontSize: 12, color: COLORS.textMuted, marginTop: 4 }}>{p.client} • {p.type}</div>
+                  </div>
+                  <div style={{ fontFamily: FONTS.mono, fontSize: 11, color: COLORS.textMuted }}>{p.id}</div>
+                </div>
+                <div style={{ fontSize: 12, color: COLORS.textMuted, marginBottom: 12 }}>📍 {p.location}</div>
+                {total > 0 && (
+                  <div>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 6 }}>
+                      <span style={{ color: COLORS.textMuted }}>{completed}/{total} tasks</span>
+                      <span style={{ color: COLORS.accent, fontWeight: 600 }}>{Math.round((completed / total) * 100)}%</span>
+                    </div>
+                    <ProgressBar value={(completed / total) * 100} />
+                  </div>
+                )}
+                <div style={{ display: "flex", justifyContent: "space-between", marginTop: 12, paddingTop: 12, borderTop: `1px solid ${COLORS.border}` }}>
+                  <span style={{ fontSize: 12, color: COLORS.textMuted }}>
+                    {p.crew !== "Unassigned" ? `${p.crew} Crew` : "Unassigned"}
+                  </span>
+                  <span style={{ fontSize: 14, fontWeight: 700, fontFamily: FONTS.display, color: COLORS.accent }}>
+                    ${p.budget?.toLocaleString()}
+                  </span>
+                </div>
+              </Card>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };
@@ -1575,6 +1852,49 @@ const InventoryView = ({ isMobile }) => {
           </Card>
         ))}
       </div>
+
+      {/* Low Stock Auto-Alert Section */}
+      {INVENTORY.filter(i => i.qty <= i.minQty).length > 0 && (
+        <Card style={{ marginBottom: 20, border: `1px solid ${COLORS.danger}30` }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, flexWrap: "wrap", gap: 8 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ width: 8, height: 8, borderRadius: "50%", background: COLORS.danger, animation: "pulse 2s infinite" }} />
+              <span style={{ fontFamily: FONTS.display, fontSize: 15, fontWeight: 600, color: COLORS.danger }}>Low Stock Auto-Alerts</span>
+            </div>
+            <Badge color={COLORS.success} small>AUTO-REORDER ACTIVE</Badge>
+          </div>
+          <p style={{ fontSize: 12, color: COLORS.textSecondary, marginBottom: 12 }}>
+            When items drop below minimum quantities, the app automatically sends re-order texts and emails to the supplier.
+          </p>
+          {INVENTORY.filter(i => i.qty <= i.minQty).map(item => (
+            <div key={item.id} style={{
+              display: "flex", justifyContent: "space-between", alignItems: "center",
+              padding: "10px 14px", borderRadius: 8, background: `${COLORS.danger}08`,
+              border: `1px solid ${COLORS.danger}15`, marginBottom: 6, flexWrap: "wrap", gap: 8,
+            }}>
+              <div>
+                <div style={{ fontWeight: 600, fontSize: 13 }}>{item.name}</div>
+                <div style={{ fontSize: 11, color: COLORS.textMuted }}>
+                  {item.qty} {item.unit} remaining · Min: {item.minQty} {item.unit}
+                  {item.supplier && ` · Supplier: ${item.supplier}`}
+                </div>
+              </div>
+              <div style={{ display: "flex", gap: 6 }}>
+                <Badge color={COLORS.danger} small>Below minimum</Badge>
+                {item.supplier && (
+                  <button style={{
+                    padding: "4px 10px", borderRadius: 6, fontSize: 11, fontWeight: 600,
+                    background: `${COLORS.accent}15`, color: COLORS.accent, border: `1px solid ${COLORS.accent}30`,
+                    cursor: "pointer", fontFamily: FONTS.body,
+                  }}>
+                    Re-order from {item.supplier} →
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+        </Card>
+      )}
 
       <Card style={{ padding: 0, overflow: "hidden" }}>
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
@@ -1882,11 +2202,26 @@ const ProjectMapView = ({ isMobile }) => {
 };
 
 
+
+// ─── PAVING COST REFERENCE ───────────────────────────────
+const COST_REFERENCE = [
+  { keyword: "hma", material: "Hot Mix Asphalt", costPer: 85, unit: "ton", coversSqft: 80, depth: '2"', note: "$10,625 covers ~10,000 sqft" },
+  { keyword: "surface course", material: "HMA Surface Course", costPer: 85, unit: "ton", coversSqft: 110, depth: '1.5"', note: "" },
+  { keyword: "sealcoat", material: "Sealcoat", costPer: 3.75, unit: "gallon", coversSqft: 50, depth: "surface", note: "$0.075/sqft material cost" },
+  { keyword: "aggregate", material: "Crushed Aggregate Base", costPer: 28, unit: "ton", coversSqft: 100, depth: '4"', note: "" },
+  { keyword: "tack coat", material: "Tack Coat Emulsion", costPer: 4.50, unit: "gallon", coversSqft: 55, depth: "bond", note: "" },
+  { keyword: "cold patch", material: "Cold Patch", costPer: 12, unit: "bag", coversSqft: 4, depth: '2"', note: "Quick-set pothole fill" },
+  { keyword: "crack filler", material: "Crack Filler", costPer: 18, unit: "gallon", coversSqft: 30, depth: "fill", note: "" },
+  { keyword: "striping", material: "Striping Paint", costPer: 32, unit: "gallon", coversSqft: 400, depth: "line-ft", note: "~400 linear ft per gallon" },
+  { keyword: "edge form", material: "Edge Forms (10ft)", costPer: 22, unit: "piece", coversSqft: 10, depth: "linear-ft", note: "" },
+];
+
 // ─── ESTIMATES & BILLING VIEW ────────────────────────────
 const EstimatesView = ({ isMobile }) => {
   const [tab, setTab] = useState("estimates");
   const [showCreate, setShowCreate] = useState(false);
   const [newEst, setNewEst] = useState({ client: "", project: "", items: [{ desc: "", qty: 1, rate: 0 }] });
+  const [sendingEst, setSendingEst] = useState(null);
 
   const addItem = () => setNewEst(prev => ({ ...prev, items: [...prev.items, { desc: "", qty: 1, rate: 0 }] }));
   const updateItem = (i, field, val) => {
@@ -1927,25 +2262,57 @@ const EstimatesView = ({ isMobile }) => {
               style={{ padding: "10px 14px", borderRadius: 8, border: `1px solid ${COLORS.border}`, background: COLORS.surface, color: COLORS.text, fontSize: 14, outline: "none" }} />
           </div>
           <div style={{ fontSize: 12, fontFamily: FONTS.mono, color: COLORS.textMuted, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>Line Items</div>
-          {newEst.items.map((item, i) => (
-            <div key={i} style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "2fr 80px 120px", gap: 8, marginBottom: 8 }}>
-              <input placeholder="Description" value={item.desc} onChange={e => updateItem(i, "desc", e.target.value)}
-                style={{ padding: "8px 12px", borderRadius: 6, border: `1px solid ${COLORS.border}`, background: COLORS.surface, color: COLORS.text, fontSize: 13, outline: "none" }} />
-              <input placeholder="Qty" type="number" value={item.qty || ""} onChange={e => updateItem(i, "qty", e.target.value)}
-                style={{ padding: "8px 12px", borderRadius: 6, border: `1px solid ${COLORS.border}`, background: COLORS.surface, color: COLORS.text, fontSize: 13, outline: "none" }} />
-              <input placeholder="Rate $" type="number" value={item.rate || ""} onChange={e => updateItem(i, "rate", e.target.value)}
-                style={{ padding: "8px 12px", borderRadius: 6, border: `1px solid ${COLORS.border}`, background: COLORS.surface, color: COLORS.text, fontSize: 13, outline: "none" }} />
+          {newEst.items.map((item, i) => {
+            const costMatch = COST_REFERENCE.find(r => item.desc.toLowerCase().includes(r.keyword));
+            const materialCost = costMatch ? (item.qty * costMatch.costPer) : null;
+            return (
+            <div key={i} style={{ marginBottom: 12 }}>
+              <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "2fr 80px 120px 100px", gap: 8 }}>
+                <input placeholder="Description (e.g. HMA base course)" value={item.desc} onChange={e => updateItem(i, "desc", e.target.value)}
+                  style={{ padding: "8px 12px", borderRadius: 6, border: `1px solid ${COLORS.border}`, background: COLORS.surface, color: COLORS.text, fontSize: 13, outline: "none" }} />
+                <input placeholder="Qty" type="number" value={item.qty || ""} onChange={e => updateItem(i, "qty", e.target.value)}
+                  style={{ padding: "8px 12px", borderRadius: 6, border: `1px solid ${COLORS.border}`, background: COLORS.surface, color: COLORS.text, fontSize: 13, outline: "none" }} />
+                <input placeholder="Client Rate $" type="number" value={item.rate || ""} onChange={e => updateItem(i, "rate", e.target.value)}
+                  style={{ padding: "8px 12px", borderRadius: 6, border: `1px solid ${COLORS.border}`, background: COLORS.surface, color: COLORS.text, fontSize: 13, outline: "none" }} />
+                <div style={{ display: "flex", alignItems: "center", fontSize: 12, fontFamily: FONTS.mono, fontWeight: 600, color: (item.qty * item.rate - (materialCost || 0)) > 0 ? COLORS.success : COLORS.textMuted }}>
+                  {materialCost !== null ? `+$${(item.qty * item.rate - materialCost).toLocaleString()}` : ""}
+                </div>
+              </div>
+              {/* Cost intelligence hint */}
+              {costMatch && item.qty > 0 && (
+                <div style={{
+                  marginTop: 4, padding: "6px 10px", borderRadius: 6,
+                  background: `${COLORS.info}08`, border: `1px solid ${COLORS.info}15`,
+                  fontSize: 11, color: COLORS.info, display: "flex", gap: 12, flexWrap: "wrap",
+                }}>
+                  <span>Your cost: <strong>${materialCost?.toLocaleString()}</strong> ({item.qty} × ${costMatch.costPer}/{costMatch.unit})</span>
+                  <span>Coverage: ~{(item.qty * costMatch.coversSqft).toLocaleString()} sqft</span>
+                  <span>Margin: <strong style={{ color: (item.qty * item.rate - materialCost) > 0 ? COLORS.success : COLORS.danger }}>
+                    {item.rate > 0 ? Math.round(((item.qty * item.rate - materialCost) / (item.qty * item.rate)) * 100) : 0}%
+                  </strong></span>
+                </div>
+              )}
             </div>
-          ))}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 12 }}>
+            );
+          })}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 12, flexWrap: "wrap", gap: 8 }}>
             <Button variant="ghost" size="sm" onClick={addItem} icon="add">Add Line Item</Button>
-            <div style={{ fontFamily: FONTS.display, fontSize: 20, fontWeight: 700, color: COLORS.accent }}>
-              Total: ${estTotal.toLocaleString()}
+            <div style={{ textAlign: "right" }}>
+              <div style={{ fontSize: 11, color: COLORS.textMuted }}>
+                Material cost: ${newEst.items.reduce((s, item) => {
+                  const m = COST_REFERENCE.find(r => item.desc.toLowerCase().includes(r.keyword));
+                  return s + (m ? item.qty * m.costPer : 0);
+                }, 0).toLocaleString()}
+              </div>
+              <div style={{ fontFamily: FONTS.display, fontSize: 20, fontWeight: 700, color: COLORS.accent }}>
+                Client Total: ${estTotal.toLocaleString()}
+              </div>
             </div>
           </div>
-          <div style={{ display: "flex", gap: 8, marginTop: 16, justifyContent: "flex-end" }}>
+          <div style={{ display: "flex", gap: 8, marginTop: 16, justifyContent: "flex-end", flexWrap: "wrap" }}>
             <Button variant="ghost" onClick={() => {}}>Save Draft</Button>
-            <Button onClick={() => {}}>Send as PDF</Button>
+            <Button variant="ghost" icon="email" onClick={() => {}}>Send PDF via Email</Button>
+            <Button icon="send" onClick={() => {}}>Send PDF via Text</Button>
           </div>
         </Card>
       )}
@@ -1968,12 +2335,40 @@ const EstimatesView = ({ isMobile }) => {
                   <Badge color={statusColors[est.status]} small>{est.status}</Badge>
                 </div>
               </div>
-              <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-                <Button variant="ghost" size="sm" icon="pdf">PDF</Button>
-                <Button variant="ghost" size="sm" icon="email">Email</Button>
-                <Button variant="ghost" size="sm" icon="send">Text</Button>
-                <Button variant="ghost" size="sm" icon="edit">Duplicate</Button>
-              </div>
+              {sendingEst === est.id && (
+                <div style={{
+                  marginTop: 12, padding: 14, borderRadius: 10,
+                  background: `${COLORS.accent}08`, border: `1px solid ${COLORS.accent}20`,
+                }}>
+                  <div style={{ fontSize: 12, fontFamily: FONTS.mono, color: COLORS.accent, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>Send Estimate to {est.client}</div>
+                  <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 8 }}>
+                    <select style={{ flex: 1, padding: "8px 12px", borderRadius: 6, border: `1px solid ${COLORS.border}`, background: COLORS.surface, color: COLORS.text, fontSize: 13 }}>
+                      <option>Send as Text (SMS/iMessage)</option>
+                      <option>Send via Email</option>
+                      <option>Send via WhatsApp</option>
+                    </select>
+                  </div>
+                  <input placeholder="Phone or email..." defaultValue="" style={{
+                    width: "100%", padding: "8px 12px", borderRadius: 6, marginBottom: 8,
+                    border: `1px solid ${COLORS.border}`, background: COLORS.surface, color: COLORS.text, fontSize: 13, outline: "none",
+                  }} />
+                  <p style={{ fontSize: 11, color: COLORS.textSecondary, marginBottom: 8 }}>
+                    PDF will include your company logo, itemized breakdown, terms, and a professional cover page.
+                  </p>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <Button size="sm" icon="send">Send Now</Button>
+                    <Button size="sm" variant="ghost" onClick={() => setSendingEst(null)}>Cancel</Button>
+                  </div>
+                </div>
+              )}
+              {sendingEst !== est.id && (
+                <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+                  <Button variant="ghost" size="sm" icon="pdf" onClick={() => setSendingEst(est.id)}>Send PDF</Button>
+                  <Button variant="ghost" size="sm" icon="email" onClick={() => setSendingEst(est.id)}>Email</Button>
+                  <Button variant="ghost" size="sm" icon="send" onClick={() => setSendingEst(est.id)}>Text</Button>
+                  <Button variant="ghost" size="sm" icon="edit">Duplicate</Button>
+                </div>
+              )}
             </Card>
           ))}
         </div>

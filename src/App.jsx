@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo, createContext, useContext } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 
@@ -13,13 +13,17 @@ const useIsMobile = (breakpoint = 768) => {
   return isMobile;
 };
 
+// ─── THEME CONTEXT ────────────────────────────────────
+const ThemeContext = createContext({ isDark: true, toggle: () => {} });
+const useTheme = () => useContext(ThemeContext);
+
 const COLORS = {
-  bg: "#0F1114",
-  surface: "#1A1D23",
-  surfaceHover: "#22262E",
-  card: "#1E2128",
-  border: "#2A2E36",
-  borderLight: "#363B45",
+  bg: "var(--c-bg)",
+  surface: "var(--c-surface)",
+  surfaceHover: "var(--c-surfaceHover)",
+  card: "var(--c-card)",
+  border: "var(--c-border)",
+  borderLight: "var(--c-borderLight)",
   accent: "#F59E0B",
   accentDark: "#D97706",
   accentLight: "#FBBF24",
@@ -27,10 +31,10 @@ const COLORS = {
   danger: "#EF4444",
   warning: "#F59E0B",
   info: "#3B82F6",
-  text: "#F1F5F9",
-  textSecondary: "#94A3B8",
-  textMuted: "#64748B",
-  asphalt: "#2D3139",
+  text: "var(--c-text)",
+  textSecondary: "var(--c-textSecondary)",
+  textMuted: "var(--c-textMuted)",
+  asphalt: "var(--c-asphalt)",
 };
 
 const FONTS = {
@@ -494,20 +498,51 @@ const Icon = ({ name, size = 20, color = "currentColor" }) => {
 const GlobalStyles = () => (
   <style>{`
     @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&family=Source+Sans+3:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+    /* ─── DARK THEME (default) ─────────────────── */
+    :root, [data-theme="dark"] {
+      --c-bg: #0F1114;
+      --c-surface: #1A1D23;
+      --c-surfaceHover: #22262E;
+      --c-card: #1E2128;
+      --c-border: #2A2E36;
+      --c-borderLight: #363B45;
+      --c-text: #F1F5F9;
+      --c-textSecondary: #94A3B8;
+      --c-textMuted: #64748B;
+      --c-asphalt: #2D3139;
+      --c-shadow: rgba(0,0,0,0.3);
+      --c-overlay: rgba(0,0,0,0.6);
+    }
+
+    /* ─── LIGHT THEME ──────────────────────────── */
+    [data-theme="light"] {
+      --c-bg: #F1F5F9;
+      --c-surface: #FFFFFF;
+      --c-surfaceHover: #F8FAFC;
+      --c-card: #FFFFFF;
+      --c-border: #E2E8F0;
+      --c-borderLight: #CBD5E1;
+      --c-text: #0F172A;
+      --c-textSecondary: #475569;
+      --c-textMuted: #64748B;
+      --c-asphalt: #E2E8F0;
+      --c-shadow: rgba(0,0,0,0.08);
+      --c-overlay: rgba(0,0,0,0.3);
+    }
     
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: ${COLORS.bg}; font-family: ${FONTS.body}; color: ${COLORS.text}; overflow: hidden; }
+    body { background: var(--c-bg); font-family: ${FONTS.body}; color: var(--c-text); overflow: hidden; transition: background 0.3s, color 0.3s; }
     
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: ${COLORS.border}; border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: ${COLORS.borderLight}; }
+    ::-webkit-scrollbar-thumb { background: var(--c-border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--c-borderLight); }
     
     @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes slideIn { from { opacity: 0; transform: translateX(-12px); } to { opacity: 1; transform: translateX(0); } }
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
     @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
-    @keyframes slideInLeft { from { transform: translateX(-100%); } to { transform: translateX(0); } }
     
     .fade-in { animation: fadeIn 0.4s ease-out forwards; }
     .slide-in { animation: slideIn 0.3s ease-out forwards; }
@@ -516,7 +551,12 @@ const GlobalStyles = () => (
     
     .glow-amber { box-shadow: 0 0 20px rgba(245, 158, 11, 0.15); }
     .hover-lift { transition: transform 0.2s, box-shadow 0.2s; }
-    .hover-lift:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+    .hover-lift:hover { transform: translateY(-2px); box-shadow: 0 8px 24px var(--c-shadow); }
+
+    /* Theme transition on key elements */
+    [data-theme] * {
+      transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
+    }
 
     /* ─── MOBILE RESPONSIVE ─────────────────────── */
     .mobile-header { display: none; }
@@ -525,12 +565,12 @@ const GlobalStyles = () => (
     @media (max-width: 768px) {
       .mobile-header {
         display: flex; align-items: center; gap: 12px;
-        padding: 12px 16px; background: ${COLORS.surface};
-        border-bottom: 1px solid ${COLORS.border};
+        padding: 12px 16px; background: var(--c-surface);
+        border-bottom: 1px solid var(--c-border);
         position: sticky; top: 0; z-index: 50;
       }
       .mobile-header button {
-        background: none; border: none; color: ${COLORS.text};
+        background: none; border: none; color: var(--c-text);
         cursor: pointer; padding: 6px; border-radius: 6px;
         display: flex; align-items: center; justify-content: center;
       }
@@ -540,17 +580,13 @@ const GlobalStyles = () => (
         transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         width: 260px !important;
       }
-      .sidebar-desktop.sidebar-open {
-        transform: translateX(0);
-      }
+      .sidebar-desktop.sidebar-open { transform: translateX(0); }
       .sidebar-overlay {
         display: block; position: fixed; inset: 0; z-index: 99;
-        background: rgba(0,0,0,0.6); opacity: 0;
+        background: var(--c-overlay); opacity: 0;
         transition: opacity 0.3s; pointer-events: none;
       }
-      .sidebar-overlay.sidebar-open {
-        opacity: 1; pointer-events: auto;
-      }
+      .sidebar-overlay.sidebar-open { opacity: 1; pointer-events: auto; }
       
       .view-container { padding: 16px !important; }
       .section-header h1 { font-size: 24px !important; }
@@ -561,15 +597,8 @@ const GlobalStyles = () => (
       .grid-2-keep { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
       .grid-sidebar { grid-template-columns: 1fr !important; gap: 12px !important; }
       
-      .msg-layout { grid-template-columns: 1fr !important; }
-      .msg-sidebar { display: none; }
-      .msg-sidebar.msg-sidebar-show { display: flex; position: fixed; left: 0; top: 0; width: 280px; height: 100vh; z-index: 90; background: ${COLORS.surface}; border-right: 1px solid ${COLORS.border}; }
-      
       .map-grid { grid-template-columns: 1fr !important; }
-      .map-container { min-height: 300px !important; height: 300px !important; }
       .map-sidebar-cards { max-height: 300px !important; }
-      
-      .detail-sidebar { position: fixed !important; right: 0; top: 0; width: 90vw !important; max-width: 400px; height: 100vh; z-index: 80; overflow-y: auto; margin: 0 !important; border-radius: 0 !important; border-left: 1px solid ${COLORS.border}; }
       
       .lead-grid { grid-template-columns: 1fr !important; }
       .source-grid { grid-template-columns: repeat(2, 1fr) !important; }
@@ -656,6 +685,34 @@ const SectionHeader = ({ title, subtitle, action }) => (
   </div>
 );
 
+// ─── THEME TOGGLE ─────────────────────────────────────
+const ThemeToggle = ({ compact }) => {
+  const { isDark, toggle } = useTheme();
+  return (
+    <button onClick={toggle} title={isDark ? "Switch to light mode" : "Switch to dark mode"} style={{
+      display: "flex", alignItems: "center", justifyContent: "center",
+      gap: compact ? 0 : 8, padding: compact ? 6 : "6px 12px",
+      borderRadius: 8, border: `1px solid ${COLORS.border}`,
+      background: isDark ? "transparent" : "var(--c-surfaceHover)",
+      color: COLORS.textSecondary, cursor: "pointer",
+      fontSize: 12, fontFamily: FONTS.body, fontWeight: 500,
+      transition: "all 0.2s",
+      width: compact ? 36 : "auto", height: compact ? 36 : "auto",
+    }}>
+      {isDark ? (
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+      ) : (
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      )}
+      {!compact && <span>{isDark ? "Light" : "Dark"}</span>}
+    </button>
+  );
+};
+
 // ─── SIDEBAR ─────────────────────────────────────────────
 const Sidebar = ({ activeTab, setActiveTab, collapsed, setCollapsed }) => {
   const navItems = [
@@ -737,7 +794,8 @@ const Sidebar = ({ activeTab, setActiveTab, collapsed, setCollapsed }) => {
       </nav>
 
       {collapsed ? (
-        <div style={{ padding: "16px 0", borderTop: `1px solid ${COLORS.border}`, display: "flex", justifyContent: "center" }}>
+        <div style={{ padding: "12px 0", borderTop: `1px solid ${COLORS.border}`, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+          <ThemeToggle compact />
           <button onClick={() => setCollapsed(false)} title="Expand sidebar" style={{
             background: "none", border: "none", cursor: "pointer", color: COLORS.textMuted,
             padding: 6, borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center",
@@ -748,13 +806,16 @@ const Sidebar = ({ activeTab, setActiveTab, collapsed, setCollapsed }) => {
         </div>
       ) : (
         <div style={{ padding: "16px 12px", borderTop: `1px solid ${COLORS.border}` }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px" }}>
-            <Avatar initials="SC" size={32} color={COLORS.success} />
-            <div>
-              <div style={{ fontSize: 13, fontWeight: 600 }}>Sarah Chen</div>
-              <div style={{ fontSize: 10, color: COLORS.textMuted, fontFamily: FONTS.mono }}>Project Manager</div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 8px", marginBottom: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <Avatar initials="SC" size={32} color={COLORS.success} />
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 600 }}>Sarah Chen</div>
+                <div style={{ fontSize: 10, color: COLORS.textMuted, fontFamily: FONTS.mono }}>Project Manager</div>
+              </div>
             </div>
           </div>
+          <ThemeToggle />
         </div>
       )}
     </div>
@@ -826,7 +887,7 @@ const DashboardView = ({ setActiveTab, setSelectedProject, isMobile }) => {
           <SectionHeader title="Recent Messages" action={<Button variant="ghost" size="sm" onClick={() => setActiveTab("messages")}>View All →</Button>} />
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {MESSAGES.slice(-5).map(m => (
-              <div key={m.id} style={{ display: "flex", gap: 10, padding: "8px 0", borderBottom: `1px solid ${COLORS.border}08` }}>
+              <div key={m.id} style={{ display: "flex", gap: 10, padding: "8px 0", borderBottom: `1px solid color-mix(in srgb, ${COLORS.border} 3%, transparent)` }}>
                 <Avatar initials={m.avatar} size={28} color={m.channel === "management" ? COLORS.info : COLORS.accent} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -1254,7 +1315,7 @@ const InventoryView = ({ isMobile }) => {
               const status = item.qty <= item.minQty ? "low" : item.qty <= item.minQty * 1.5 ? "watch" : "ok";
               return (
                 <tr key={item.id} className="fade-in" style={{
-                  borderBottom: `1px solid ${COLORS.border}08`,
+                  borderBottom: `1px solid color-mix(in srgb, ${COLORS.border} 3%, transparent)`,
                   background: i % 2 === 0 ? "transparent" : COLORS.surface + "40",
                   animationDelay: `${i * 0.03}s`,
                 }}>
@@ -1415,7 +1476,7 @@ const TrackingView = ({ isMobile }) => {
           <div style={{
             position: "relative", bottom: 52, left: 12, zIndex: 1000,
             display: "inline-flex", gap: 14, padding: "8px 14px",
-            background: `${COLORS.bg}EE`, borderRadius: 8, border: `1px solid ${COLORS.border}`,
+            background: COLORS.bg, borderRadius: 8, border: `1px solid ${COLORS.border}`,
             fontSize: 10, fontFamily: FONTS.mono, width: "fit-content", marginLeft: 12,
             backdropFilter: "blur(8px)",
           }}>
@@ -1967,7 +2028,7 @@ const IntegrationsView = ({ isMobile }) => {
                   { label: "Redirect URI", value: "https://app.paving123.com/auth/microsoft/callback" },
                   { label: "API Endpoint", value: "https://graph.microsoft.com/v1.0" },
                 ].map(item => (
-                  <div key={item.label} style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: `1px solid ${COLORS.border}08` }}>
+                  <div key={item.label} style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: `1px solid color-mix(in srgb, ${COLORS.border} 3%, transparent)` }}>
                     <span style={{ fontSize: 12, color: COLORS.textMuted }}>{item.label}</span>
                     <span style={{ fontSize: 11, fontFamily: FONTS.mono, color: COLORS.textSecondary }}>{item.value}</span>
                   </div>
@@ -1983,7 +2044,7 @@ const IntegrationsView = ({ isMobile }) => {
                   { label: "Redirect URI", value: "https://app.paving123.com/auth/google/callback" },
                   { label: "API Endpoint", value: "https://gmail.googleapis.com/gmail/v1" },
                 ].map(item => (
-                  <div key={item.label} style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: `1px solid ${COLORS.border}08` }}>
+                  <div key={item.label} style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: `1px solid color-mix(in srgb, ${COLORS.border} 3%, transparent)` }}>
                     <span style={{ fontSize: 12, color: COLORS.textMuted }}>{item.label}</span>
                     <span style={{ fontSize: 11, fontFamily: FONTS.mono, color: item.value === "Not configured" ? COLORS.danger : COLORS.textSecondary }}>{item.value}</span>
                   </div>
@@ -2044,7 +2105,7 @@ export default function App() {
   const tabLabels = { dashboard: "Dashboard", messages: "Comms Portal", projects: "Projects", inventory: "Inventory", tracking: "Fleet & Crew", leads: "Lead Intel", integrations: "Integrations" };
 
   return (
-    <>
+    <ThemeContext.Provider value={{ isDark, toggle: toggleTheme }}>
       <GlobalStyles />
       <div style={{ display: "flex", height: "100vh", overflow: "hidden", background: COLORS.bg }}>
         {!isMobile && (
@@ -2090,6 +2151,6 @@ export default function App() {
           </main>
         </div>
       </div>
-    </>
+    </ThemeContext.Provider>
   );
 }

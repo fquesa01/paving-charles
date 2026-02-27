@@ -3,11 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png",
-  iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png",
-  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
-});
+L.Icon.Default.mergeOptions({ iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png", iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png", shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png" });
 
 // ─── THEME CONTEXT ────────────────────────────────────
 const ThemeContext = createContext({ isDark: true, toggle: () => {} });
@@ -1216,7 +1212,6 @@ const MessagesView = ({ isMobile }) => {
   const [messages, setMessages] = useState(MESSAGES);
   const [newMessage, setNewMessage] = useState("");
   const [showChannelList, setShowChannelList] = useState(!isMobile);
-  const [showClientUpdate, setShowClientUpdate] = useState(false);
   const [showClientUpdate, setShowClientUpdate] = useState(false);
   const messagesEndRef = useRef(null);
 

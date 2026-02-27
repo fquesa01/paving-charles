@@ -189,6 +189,258 @@ const LEADS = [
   },
 ];
 
+// ─── BOND & LEAD DATA SOURCES ──────────────────────────
+const DATA_SOURCES = {
+  federal: [
+    {
+      id: "ds-01", name: "EMMA (MSRB)", url: "https://emma.msrb.org", type: "Bond",
+      description: "Official SEC-designated repository for all municipal bond disclosures. Free advanced search by issuer, state, security type. Covers 1M+ outstanding municipal securities.",
+      searchTerms: ["road", "highway", "infrastructure", "paving", "street improvement", "transportation"],
+      frequency: "Every 24 hours", apiAvailable: true, free: true, priority: "Critical",
+      category: "National Bond Database",
+    },
+    {
+      id: "ds-02", name: "SAM.gov", url: "https://sam.gov/opportunities", type: "RFP",
+      description: "Federal government's centralized procurement system. Search by NAICS codes 237310 (Highway/Street/Bridge Construction) and 238990 (Site Preparation).",
+      searchTerms: ["NAICS 237310", "NAICS 238990", "paving", "asphalt", "road construction"],
+      frequency: "Every 24 hours", apiAvailable: true, free: true, priority: "Critical",
+      category: "Federal Procurement",
+    },
+    {
+      id: "ds-03", name: "FHWA Business Opportunities", url: "https://highways.dot.gov/about/business-opportunities", type: "RFP",
+      description: "Federal Highway Administration contracts for roads on federal lands, parkways, Indian reservation roads, and defense access roads.",
+      searchTerms: ["road construction", "paving", "highway", "resurfacing"],
+      frequency: "Every 24 hours", apiAvailable: false, free: true, priority: "High",
+      category: "Federal DOT",
+    },
+    {
+      id: "ds-04", name: "Grants.gov", url: "https://www.grants.gov", type: "Bond",
+      description: "Federal grants for infrastructure including FHWA Surface Transportation Block Grants, RAISE grants, and Infrastructure Investment and Jobs Act funding.",
+      searchTerms: ["infrastructure", "transportation", "road", "highway", "IIJA"],
+      frequency: "Every 24 hours", apiAvailable: true, free: true, priority: "High",
+      category: "Federal Grants",
+    },
+    {
+      id: "ds-05", name: "USASpending.gov", url: "https://www.usaspending.gov", type: "Bond",
+      description: "Tracks all federal spending. Useful for identifying awarded infrastructure contracts and upcoming re-compete opportunities.",
+      searchTerms: ["highway", "road", "paving", "asphalt"],
+      frequency: "Weekly", apiAvailable: true, free: true, priority: "Medium",
+      category: "Federal Spending",
+    },
+    {
+      id: "ds-06", name: "MunicipalBonds.com", url: "https://www.municipalbonds.com", type: "Bond",
+      description: "Real-time municipal bond trade data searchable by category including Roads/Highways, with new issue calendar and screening tools.",
+      searchTerms: ["roads/highways", "infrastructure", "general obligation"],
+      frequency: "Every 24 hours", apiAvailable: false, free: true, priority: "High",
+      category: "National Bond Database",
+    },
+    {
+      id: "ds-07", name: "The Bond Buyer", url: "https://www.bondbuyer.com", type: "Bond",
+      description: "Premier municipal finance news source. Tracks new issuance, deal calendars, and infrastructure bond trends nationwide.",
+      searchTerms: ["road bond", "infrastructure bond", "GO bond", "transportation"],
+      frequency: "Every 24 hours", apiAvailable: false, free: false, priority: "High",
+      category: "Industry News & Intelligence",
+    },
+    {
+      id: "ds-08", name: "SIFMA Municipal Bond Data", url: "https://www.sifma.org/research/statistics/us-municipal-bonds-statistics", type: "Bond",
+      description: "Securities Industry and Financial Markets Association. Tracks municipal bond issuance statistics, trends, and new issuance data by type.",
+      searchTerms: ["municipal issuance", "infrastructure", "transportation"],
+      frequency: "Weekly", apiAvailable: false, free: true, priority: "Medium",
+      category: "Industry Data & Analytics",
+    },
+  ],
+  procurement: [
+    {
+      id: "ds-09", name: "BidNet Direct", url: "https://www.bidnetdirect.com", type: "RFP",
+      description: "Centralized platform for state/local government bids. Covers all 50 states with regional e-purchasing systems. Supports keyword alerts for paving-specific opportunities.",
+      searchTerms: ["paving", "asphalt", "road repair", "parking lot", "driveway", "resurfacing", "sealcoat"],
+      frequency: "Every 24 hours", apiAvailable: true, free: false, priority: "Critical",
+      category: "Procurement Aggregator",
+    },
+    {
+      id: "ds-10", name: "DemandStar", url: "https://network.demandstar.com", type: "RFP",
+      description: "1,400+ government agencies post directly. Covers housing authorities, airports, school districts, cities, and counties. Strong Midwest coverage.",
+      searchTerms: ["paving", "road", "parking lot", "asphalt", "resurfacing"],
+      frequency: "Every 24 hours", apiAvailable: true, free: false, priority: "Critical",
+      category: "Procurement Aggregator",
+    },
+    {
+      id: "ds-11", name: "GovWin IQ (Deltek)", url: "https://iq.govwin.com", type: "RFP",
+      description: "Enterprise-grade government intelligence platform. Pre-solicitation intelligence from budget docs and meeting minutes. Largest analyst team in the industry.",
+      searchTerms: ["road construction", "paving", "infrastructure", "highway maintenance"],
+      frequency: "Every 24 hours", apiAvailable: true, free: false, priority: "High",
+      category: "Procurement Intelligence",
+    },
+    {
+      id: "ds-12", name: "FindRFP", url: "https://www.findrfp.com", type: "RFP",
+      description: "Database of government bids, RFPs, and contracts from federal, state, and local governments across all 50 states.",
+      searchTerms: ["paving", "asphalt", "road", "driveway", "parking"],
+      frequency: "Every 24 hours", apiAvailable: false, free: false, priority: "Medium",
+      category: "Procurement Aggregator",
+    },
+    {
+      id: "ds-13", name: "Bonfire", url: "https://gobonfire.com", type: "RFP",
+      description: "E-procurement platform used by hundreds of government orgs. Free vendor portal to view and submit bids for cities, school districts, and utilities.",
+      searchTerms: ["paving", "road maintenance", "asphalt", "parking lot"],
+      frequency: "Every 24 hours", apiAvailable: false, free: true, priority: "Medium",
+      category: "E-Procurement Platform",
+    },
+    {
+      id: "ds-14", name: "GovSpend", url: "https://www.govspend.com", type: "RFP",
+      description: "Covers 80%+ of government purchasing that occurs without RFPs. Provides purchase order data, bids, and government contact databases.",
+      searchTerms: ["paving", "asphalt", "road repair", "parking"],
+      frequency: "Every 24 hours", apiAvailable: true, free: false, priority: "Medium",
+      category: "Procurement Intelligence",
+    },
+    {
+      id: "ds-15", name: "BidSearch", url: "https://www.bidsearch.com", type: "RFP",
+      description: "Modern procurement search covering 100,000+ opportunities including Canadian provinces. Simple, focused RFP identification tool.",
+      searchTerms: ["paving", "road construction", "asphalt", "resurfacing"],
+      frequency: "Every 24 hours", apiAvailable: false, free: false, priority: "Low",
+      category: "Procurement Aggregator",
+    },
+    {
+      id: "ds-16", name: "Vendor Registry", url: "https://vendorregistry.com", type: "RFP",
+      description: "Serves 400+ public agencies and 70,000+ vendors. Focused on cities, counties, school districts, and utilities. Hand-coded bids matched to vendor profiles.",
+      searchTerms: ["paving", "road", "parking lot", "asphalt"],
+      frequency: "Every 24 hours", apiAvailable: false, free: false, priority: "Medium",
+      category: "Procurement Aggregator",
+    },
+  ],
+  midwest_state: [
+    {
+      id: "ds-17", name: "INDOT Bid Viewer", url: "https://erms12c.indot.in.gov/INDOTBidViewer/BidOpportunities.aspx", type: "RFP",
+      description: "Indiana DOT official bid opportunities portal. All state highway construction letting schedules and local public works jobs advertised through INDOT.",
+      searchTerms: ["paving", "resurfacing", "road", "HMA", "asphalt"],
+      frequency: "Every 24 hours", apiAvailable: false, free: true, priority: "Critical",
+      category: "Indiana State",
+    },
+    {
+      id: "ds-18", name: "Indiana IDOA Procurement", url: "https://www.in.gov/idoa/procurement/current-business-opportunities/", type: "RFP",
+      description: "Indiana Department of Administration. All state solicitations over $75,000 posted here. Covers all agency procurement.",
+      searchTerms: ["paving", "road", "parking", "asphalt", "infrastructure"],
+      frequency: "Every 24 hours", apiAvailable: false, free: true, priority: "Critical",
+      category: "Indiana State",
+    },
+    {
+      id: "ds-19", name: "Marion County (Indy) Bids", url: "https://www.indy.gov/activity/find-bid-opportunities", type: "RFP",
+      description: "City of Indianapolis / Marion County procurement portal. All city bids including public works, roads, and infrastructure.",
+      searchTerms: ["paving", "road", "street", "parking", "sidewalk"],
+      frequency: "Every 24 hours", apiAvailable: false, free: true, priority: "Critical",
+      category: "Indiana Municipal",
+    },
+    {
+      id: "ds-20", name: "Indiana Public Notices", url: "http://www.indianapublicnotices.com/", type: "Permit",
+      description: "Statewide public notice aggregator for Indiana. Includes bid advertisements, bond issuance notices, and public hearing notices.",
+      searchTerms: ["road improvement", "paving", "bond", "infrastructure"],
+      frequency: "Every 24 hours", apiAvailable: false, free: true, priority: "High",
+      category: "Indiana Public Notices",
+    },
+    {
+      id: "ds-21", name: "Ohio DOT Contractor Portal", url: "https://www.transportation.ohio.gov/working/doing-business", type: "RFP",
+      description: "Ohio Department of Transportation procurement and bid opportunities. Letting schedules and contractor resources.",
+      searchTerms: ["paving", "resurfacing", "road", "asphalt", "bridge"],
+      frequency: "Every 24 hours", apiAvailable: false, free: true, priority: "Critical",
+      category: "Ohio State",
+    },
+    {
+      id: "ds-22", name: "Illinois DOT Letting Bulletin", url: "https://cei.illinois.gov/vendor-resources/illinois-procurement-opportunities.html", type: "RFP",
+      description: "Official IDOT highway construction solicitation bulletin. Covers highway construction, airport work, and DNR construction projects.",
+      searchTerms: ["paving", "resurfacing", "road", "HMA", "asphalt"],
+      frequency: "Every 24 hours", apiAvailable: false, free: true, priority: "High",
+      category: "Illinois State",
+    },
+    {
+      id: "ds-23", name: "Michigan SIGMA VSS", url: "https://sigma.michigan.gov/webapp/PRDVSS2X1/AltSelfService", type: "RFP",
+      description: "Michigan's State Integrated Governmental Management Application. All state bid opportunities posted through SIGMA Vendor Self Service.",
+      searchTerms: ["paving", "road", "asphalt", "highway"],
+      frequency: "Every 24 hours", apiAvailable: false, free: true, priority: "High",
+      category: "Michigan State",
+    },
+    {
+      id: "ds-24", name: "Kentucky Transportation Cabinet", url: "https://transportation.ky.gov/Construction-Procurement", type: "RFP",
+      description: "Kentucky transportation construction procurement. Bid lettings and pre-qualified contractor opportunities.",
+      searchTerms: ["paving", "asphalt", "road", "resurfacing"],
+      frequency: "Every 24 hours", apiAvailable: false, free: true, priority: "Medium",
+      category: "Kentucky State",
+    },
+    {
+      id: "ds-25", name: "Wisconsin DOT Bids", url: "https://wisconsindot.gov/Pages/doing-bus/contractors/hcci/default.aspx", type: "RFP",
+      description: "WisDOT Highway Construction Contract Information. Letting schedules and bid tabulations.",
+      searchTerms: ["paving", "road", "asphalt", "HMA"],
+      frequency: "Every 24 hours", apiAvailable: false, free: true, priority: "Medium",
+      category: "Wisconsin State",
+    },
+    {
+      id: "ds-26", name: "Minnesota DOT Bids", url: "https://www.dot.state.mn.us/bidlet/", type: "RFP",
+      description: "MnDOT bid letting schedule and construction project bids. Includes local agency projects.",
+      searchTerms: ["paving", "road", "asphalt", "bituminous"],
+      frequency: "Every 24 hours", apiAvailable: false, free: true, priority: "Medium",
+      category: "Minnesota State",
+    },
+    {
+      id: "ds-27", name: "Iowa DOT Lettings", url: "https://iowadot.gov/contracts/letting-information", type: "RFP",
+      description: "Iowa DOT contract letting information and bid results. Highway and road construction projects.",
+      searchTerms: ["paving", "road", "asphalt", "HMA"],
+      frequency: "Every 24 hours", apiAvailable: false, free: true, priority: "Medium",
+      category: "Iowa State",
+    },
+    {
+      id: "ds-28", name: "Missouri DOT Bids", url: "https://www.modot.org/how-bid-modot-project", type: "RFP",
+      description: "MoDOT project bidding portal. Highway construction letting schedules and bid results.",
+      searchTerms: ["paving", "road", "asphalt", "overlay"],
+      frequency: "Every 24 hours", apiAvailable: false, free: true, priority: "Medium",
+      category: "Missouri State",
+    },
+  ],
+  permits_local: [
+    {
+      id: "ds-29", name: "US Public Works - Indiana", url: "https://uspublicworks.com/indiana-bid-notices-city-county-state-municipal/", type: "Permit",
+      description: "Comprehensive directory of every Indiana municipality's bid portal. Links to 90+ city, county, and township bid pages.",
+      searchTerms: ["paving", "road", "driveway", "parking"],
+      frequency: "Every 24 hours", apiAvailable: false, free: true, priority: "High",
+      category: "Municipal Directory",
+    },
+    {
+      id: "ds-30", name: "County Recorder Offices", url: "various", type: "Permit",
+      description: "Building permit filings for residential and commercial construction. Track new subdivision permits, commercial construction permits, and road improvement permits across Midwest counties.",
+      searchTerms: ["driveway", "parking lot", "road", "paving", "new construction"],
+      frequency: "Every 24 hours", apiAvailable: false, free: true, priority: "Critical",
+      category: "Building Permits",
+    },
+    {
+      id: "ds-31", name: "OpenGov Procurement Portals", url: "https://procurement.opengov.com", type: "RFP",
+      description: "Many municipalities use OpenGov for procurement. Bloomington, IN and hundreds of other cities post bids through OpenGov portals.",
+      searchTerms: ["paving", "road", "asphalt", "parking"],
+      frequency: "Every 24 hours", apiAvailable: true, free: true, priority: "High",
+      category: "Municipal Procurement Platform",
+    },
+  ],
+};
+
+// ─── EMAIL/CALENDAR MOCK DATA ─────────────────────────────
+const EMAIL_DATA = [
+  { id: 1, from: "City of Fishers Procurement", email: "procurement@fishers.in.us", subject: "RFP-2026-0089 Parking Lot Rehabilitation - Q&A Addendum", date: "Feb 26, 10:15 AM", unread: true, label: "RFP", important: true },
+  { id: 2, from: "Johnson Family", email: "mjohnson1245@gmail.com", subject: "Re: Driveway project update - looks great so far!", date: "Feb 26, 9:42 AM", unread: true, label: "Client", important: false },
+  { id: 3, from: "Midwest Asphalt Supply", email: "orders@midwestasphalt.com", subject: "HMA Delivery Confirmation - Order #8842 - 50 tons", date: "Feb 25, 4:30 PM", unread: false, label: "Vendor", important: false },
+  { id: 4, from: "Raj Patel", email: "raj.patel@paving123.com", subject: "Maple Grove HOA - Site Visit Photos & Initial Estimate", date: "Feb 25, 2:15 PM", unread: false, label: "Internal", important: true },
+  { id: 5, from: "Hendricks County Procurement", email: "bids@co.hendricks.in.us", subject: "RFP-HC-2026-012 Rural Road Patching - Deadline Reminder March 8", date: "Feb 25, 11:00 AM", unread: false, label: "RFP", important: true },
+  { id: 6, from: "INDOT Notifications", email: "noreply@indot.in.gov", subject: "New Letting Schedule Posted - March 2026 Projects", date: "Feb 24, 3:00 PM", unread: false, label: "Lead", important: true },
+  { id: 7, from: "Oak Park Shopping Center Mgmt", email: "facilities@oakparkcenter.com", subject: "Re: Parking lot progress - when will striping begin?", date: "Feb 24, 1:22 PM", unread: false, label: "Client", important: false },
+  { id: 8, from: "Safety Equipment Plus", email: "sales@safetyeqplus.com", subject: "Invoice #INV-4421 - Safety Vests & Cones Order", date: "Feb 24, 10:05 AM", unread: false, label: "Vendor", important: false },
+];
+
+const CALENDAR_EVENTS = [
+  { id: 1, title: "Elm St Driveway - Edge Forms Install", time: "7:00 AM - 12:00 PM", date: "today", crew: "Alpha", type: "project", color: COLORS.accent },
+  { id: 2, title: "Oak Park Lot - Zones 5-8 Saw Cutting", time: "7:30 AM - 4:00 PM", date: "today", crew: "Bravo", type: "project", color: COLORS.info },
+  { id: 3, title: "Weekly Ops Standup", time: "8:30 AM - 9:00 AM", date: "today", crew: "HQ", type: "meeting", color: COLORS.success },
+  { id: 4, title: "HMA Delivery - 50 tons to Alpha Site", time: "10:00 AM", date: "today", crew: "Alpha", type: "delivery", color: COLORS.warning },
+  { id: 5, title: "Fishers RFP Q&A Session (Virtual)", time: "2:00 PM - 3:00 PM", date: "today", crew: "HQ", type: "bid", color: COLORS.danger },
+  { id: 6, title: "Maple Grove HOA Site Visit", time: "10:00 AM - 11:30 AM", date: "Mar 3", crew: "HQ", type: "bid", color: COLORS.danger },
+  { id: 7, title: "Hendricks County RFP Deadline", time: "5:00 PM", date: "Mar 8", crew: "HQ", type: "deadline", color: COLORS.danger },
+  { id: 8, title: "Fishers RFP Submission Deadline", time: "5:00 PM", date: "Mar 15", crew: "HQ", type: "deadline", color: COLORS.danger },
+];
+
 // ─── ICONS (SVG Components) ────────────────────────────────────
 const Icon = ({ name, size = 20, color = "currentColor" }) => {
   const icons = {
@@ -213,6 +465,9 @@ const Icon = ({ name, size = 20, color = "currentColor" }) => {
     chevron: <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />,
     close: <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />,
     edit: <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />,
+    email: <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />,
+    calendar: <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM9 10H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2z" />,
+    link: <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z" />,
     timeline: <path d="M23 8c0 1.1-.9 2-2 2-.18 0-.35-.02-.51-.07l-3.56 3.55c.05.16.07.34.07.52 0 1.1-.9 2-2 2s-2-.9-2-2c0-.18.02-.36.07-.52l-2.55-2.55c-.16.05-.34.07-.52.07s-.36-.02-.52-.07l-4.55 4.56c.05.16.07.33.07.51 0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2c.18 0 .35.02.51.07l4.56-4.55C8.02 9.36 8 9.18 8 9c0-1.1.9-2 2-2s2 .9 2 2c0 .18-.02.36-.07.52l2.55 2.55c.16-.05.34-.07.52-.07s.36.02.52.07l3.55-3.56C19.02 8.35 19 8.18 19 8c0-1.1.9-2 2-2s2 .9 2 2z" />,
     notification: <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" />,
     fuel: <path d="M19.77 7.23l.01-.01-3.72-3.72L15 4.56l2.11 2.11c-.94.36-1.61 1.26-1.61 2.33 0 1.38 1.12 2.5 2.5 2.5.36 0 .69-.08 1-.21v7.21c0 .55-.45 1-1 1s-1-.45-1-1V14c0-1.1-.9-2-2-2h-1V5c0-1.1-.9-2-2-2H6c-1.1 0-2 .9-2 2v16h10v-7.5h1.5v5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V9c0-.69-.28-1.32-.73-1.77zM12 10H6V5h6v5z" />,
@@ -344,6 +599,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
     { id: "inventory", icon: "inventory", label: "Inventory" },
     { id: "tracking", icon: "tracking", label: "Fleet & Crew" },
     { id: "leads", icon: "leads", label: "Lead Intel" },
+    { id: "integrations", icon: "settings", label: "Integrations" },
   ];
 
   return (
@@ -1148,10 +1404,100 @@ const TrackingView = () => {
 const LeadsView = () => {
   const [typeFilter, setTypeFilter] = useState("All");
   const [selectedLead, setSelectedLead] = useState(null);
+  const [viewTab, setViewTab] = useState("leads"); // "leads" | "sources"
+  const [sourceCategory, setSourceCategory] = useState("all");
 
   const filtered = typeFilter === "All" ? LEADS : LEADS.filter(l => l.type === typeFilter);
   const typeColors = { Bond: COLORS.info, RFP: COLORS.accent, Permit: COLORS.success };
   const statusColors = { new: COLORS.accent, reviewing: COLORS.info, contacted: COLORS.success, archived: COLORS.textMuted };
+
+  const allSources = [...DATA_SOURCES.federal, ...DATA_SOURCES.procurement, ...DATA_SOURCES.midwest_state, ...DATA_SOURCES.permits_local];
+  const filteredSources = sourceCategory === "all" ? allSources
+    : sourceCategory === "federal" ? DATA_SOURCES.federal
+    : sourceCategory === "procurement" ? DATA_SOURCES.procurement
+    : sourceCategory === "midwest" ? DATA_SOURCES.midwest_state
+    : DATA_SOURCES.permits_local;
+
+  const priorityColors = { Critical: COLORS.danger, High: COLORS.accent, Medium: COLORS.info, Low: COLORS.textMuted };
+
+  if (viewTab === "sources") {
+    return (
+      <div style={{ padding: 32, overflowY: "auto", height: "100vh" }}>
+        <SectionHeader
+          title="Lead Data Sources & Scraping Configuration"
+          subtitle={`${allSources.length} sources configured — Auto-scraping every 24 hours`}
+          action={
+            <div style={{ display: "flex", gap: 8 }}>
+              <Button variant="secondary" size="sm" onClick={() => setViewTab("leads")}>← Back to Leads</Button>
+              <Button icon="search" size="sm">Run Full Scan Now</Button>
+            </div>
+          }
+        />
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 24 }}>
+          {[
+            { label: "National / Federal", count: DATA_SOURCES.federal.length, key: "federal", color: COLORS.info, desc: "EMMA, SAM.gov, FHWA, Bond Buyer" },
+            { label: "Procurement Platforms", count: DATA_SOURCES.procurement.length, key: "procurement", color: COLORS.accent, desc: "BidNet, DemandStar, GovWin" },
+            { label: "Midwest State DOTs", count: DATA_SOURCES.midwest_state.length, key: "midwest", color: COLORS.success, desc: "IN, OH, IL, MI, KY, WI, MN, IA, MO" },
+            { label: "Permits & Municipal", count: DATA_SOURCES.permits_local.length, key: "local", color: COLORS.warning, desc: "County recorders, OpenGov" },
+          ].map((cat, i) => (
+            <Card key={cat.key} className="hover-lift" onClick={() => setSourceCategory(sourceCategory === cat.key ? "all" : cat.key)}
+              style={{ cursor: "pointer", border: `1px solid ${sourceCategory === cat.key ? cat.color : COLORS.border}`, animationDelay: `${i * 0.06}s` }}>
+              <div style={{ fontSize: 28, fontWeight: 700, fontFamily: FONTS.display, color: cat.color }}>{cat.count}</div>
+              <div style={{ fontFamily: FONTS.display, fontSize: 14, fontWeight: 600, marginTop: 4 }}>{cat.label}</div>
+              <div style={{ fontSize: 11, color: COLORS.textMuted, marginTop: 4 }}>{cat.desc}</div>
+            </Card>
+          ))}
+        </div>
+
+        <Card style={{ padding: "12px 16px", marginBottom: 20, background: `${COLORS.info}08`, border: `1px solid ${COLORS.info}25` }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <Badge color={COLORS.success}>SCANNER ACTIVE</Badge>
+            <span style={{ fontSize: 13, color: COLORS.textSecondary }}>
+              Auto-scraping runs daily at 2:00 AM EST. Search terms: <span style={{ fontFamily: FONTS.mono, color: COLORS.accent }}>road, paving, asphalt, driveway, parking lot, resurfacing, infrastructure, highway, HMA, sealcoat, overlay</span>
+            </span>
+          </div>
+        </Card>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {filteredSources.map((src, i) => (
+            <Card key={src.id} className="fade-in" style={{ padding: 16, animationDelay: `${i * 0.03}s` }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                    <Badge color={priorityColors[src.priority]} small>{src.priority}</Badge>
+                    <Badge color={typeColors[src.type]} small>{src.type}</Badge>
+                    {src.free ? <Badge color={COLORS.success} small>FREE</Badge> : <Badge color={COLORS.warning} small>PAID</Badge>}
+                    {src.apiAvailable && <Badge color={COLORS.info} small>API</Badge>}
+                    <Badge color={COLORS.textMuted} small>{src.category}</Badge>
+                  </div>
+                  <h3 style={{ fontFamily: FONTS.display, fontSize: 16, fontWeight: 600 }}>{src.name}</h3>
+                  <p style={{ fontSize: 13, color: COLORS.textSecondary, marginTop: 4, lineHeight: 1.5 }}>{src.description}</p>
+                  <div style={{ marginTop: 8, display: "flex", flexWrap: "wrap", gap: 4 }}>
+                    {src.searchTerms.map(term => (
+                      <span key={term} style={{
+                        padding: "2px 8px", borderRadius: 4, fontSize: 10, fontFamily: FONTS.mono,
+                        background: `${COLORS.accent}12`, color: COLORS.accent, border: `1px solid ${COLORS.accent}25`,
+                      }}>{term}</span>
+                    ))}
+                  </div>
+                </div>
+                <div style={{ textAlign: "right", marginLeft: 16, flexShrink: 0 }}>
+                  <div style={{ fontSize: 10, fontFamily: FONTS.mono, color: COLORS.textMuted, marginBottom: 4 }}>SCAN FREQ</div>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: COLORS.text }}>{src.frequency}</div>
+                  {src.url !== "various" && (
+                    <div style={{ fontSize: 10, color: COLORS.info, marginTop: 8, fontFamily: FONTS.mono, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {src.url}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: 32, overflowY: "auto", height: "100vh" }}>
@@ -1161,6 +1507,9 @@ const LeadsView = () => {
         action={
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             <Badge color={COLORS.success}>SCANNER ACTIVE</Badge>
+            <Button variant="secondary" size="sm" onClick={() => setViewTab("sources")}>
+              Data Sources ({allSources.length})
+            </Button>
             <Button icon="search" size="sm">Manual Search</Button>
           </div>
         }
@@ -1291,6 +1640,274 @@ const LeadsView = () => {
   );
 };
 
+// ─── INTEGRATIONS VIEW (EMAIL / CALENDAR) ────────────────
+const IntegrationsView = () => {
+  const [activeService, setActiveService] = useState(null);
+  const [emailTab, setEmailTab] = useState("inbox");
+
+  const services = [
+    {
+      id: "outlook", name: "Microsoft Outlook", icon: "email",
+      description: "Connect Outlook Mail & Calendar via Microsoft Graph API",
+      color: "#0078D4", connected: true,
+      scopes: ["Mail.Read", "Mail.Send", "Calendars.ReadWrite", "Contacts.Read"],
+      features: ["Read/send emails", "Calendar sync", "Contact lookup", "Meeting scheduling"],
+    },
+    {
+      id: "gmail", name: "Gmail & Google Calendar", icon: "email",
+      description: "Connect Gmail & Google Calendar via Google Workspace API",
+      color: "#EA4335", connected: false,
+      scopes: ["gmail.readonly", "gmail.send", "calendar.events", "contacts.readonly"],
+      features: ["Read/send emails", "Calendar sync", "Contact lookup", "Meeting scheduling"],
+    },
+  ];
+
+  const labelColors = { RFP: COLORS.danger, Client: COLORS.success, Vendor: COLORS.info, Internal: COLORS.accent, Lead: COLORS.warning };
+
+  // Email + Calendar unified view
+  if (activeService) {
+    const service = services.find(s => s.id === activeService);
+    return (
+      <div style={{ padding: 32, overflowY: "auto", height: "100vh" }}>
+        <button onClick={() => setActiveService(null)}
+          style={{ display: "flex", alignItems: "center", gap: 4, background: "none", border: "none", color: COLORS.textMuted, fontSize: 13, cursor: "pointer", marginBottom: 20, fontFamily: FONTS.body }}>
+          ← Back to Integrations
+        </button>
+
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 28 }}>
+          <div style={{ width: 48, height: 48, borderRadius: 12, background: `${service.color}22`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <Icon name="email" size={24} color={service.color} />
+          </div>
+          <div>
+            <h1 style={{ fontFamily: FONTS.display, fontSize: 28, fontWeight: 700 }}>{service.name}</h1>
+            <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+              <Badge color={service.connected ? COLORS.success : COLORS.textMuted}>{service.connected ? "CONNECTED" : "NOT CONNECTED"}</Badge>
+              {service.connected && <Badge color={COLORS.info} small>SYNCING</Badge>}
+            </div>
+          </div>
+        </div>
+
+        {!service.connected ? (
+          <Card style={{ textAlign: "center", padding: 40 }}>
+            <div style={{ width: 64, height: 64, borderRadius: 16, background: `${service.color}15`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
+              <Icon name="link" size={32} color={service.color} />
+            </div>
+            <h2 style={{ fontFamily: FONTS.display, fontSize: 22, fontWeight: 600, marginBottom: 8 }}>Connect {service.name}</h2>
+            <p style={{ color: COLORS.textSecondary, fontSize: 14, maxWidth: 400, margin: "0 auto 8px", lineHeight: 1.5 }}>
+              Authorize Paving 123 to access your {service.id === "gmail" ? "Google" : "Microsoft"} account for email and calendar integration.
+            </p>
+            <p style={{ color: COLORS.textMuted, fontSize: 12, marginBottom: 24 }}>
+              OAuth 2.0 — Your credentials are never stored
+            </p>
+            <div style={{ display: "flex", gap: 8, justifyContent: "center", marginBottom: 24 }}>
+              <Button style={{ background: service.color }}>
+                Sign in with {service.id === "gmail" ? "Google" : "Microsoft"}
+              </Button>
+            </div>
+            <div style={{ fontSize: 11, color: COLORS.textMuted, fontFamily: FONTS.mono }}>
+              Scopes requested: {service.scopes.join(", ")}
+            </div>
+          </Card>
+        ) : (
+          <>
+            <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
+              <Button variant={emailTab === "inbox" ? "primary" : "secondary"} size="sm" icon="email" onClick={() => setEmailTab("inbox")}>Inbox</Button>
+              <Button variant={emailTab === "calendar" ? "primary" : "secondary"} size="sm" icon="calendar" onClick={() => setEmailTab("calendar")}>Calendar</Button>
+              <Button variant={emailTab === "compose" ? "primary" : "secondary"} size="sm" icon="edit" onClick={() => setEmailTab("compose")}>Compose</Button>
+            </div>
+
+            {emailTab === "inbox" && (
+              <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 6 }}>
+                {EMAIL_DATA.map((email, i) => (
+                  <Card key={email.id} className="fade-in hover-lift" style={{
+                    padding: 14, cursor: "pointer", animationDelay: `${i * 0.04}s`,
+                    borderLeft: email.unread ? `3px solid ${COLORS.accent}` : `3px solid transparent`,
+                    background: email.unread ? `${COLORS.accent}05` : COLORS.card,
+                  }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                          <span style={{ fontWeight: email.unread ? 700 : 400, fontSize: 13 }}>{email.from}</span>
+                          <Badge color={labelColors[email.label] || COLORS.textMuted} small>{email.label}</Badge>
+                          {email.important && <Icon name="star" size={12} color={COLORS.accent} />}
+                        </div>
+                        <div style={{ fontSize: 14, fontWeight: email.unread ? 600 : 400, color: COLORS.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {email.subject}
+                        </div>
+                        <div style={{ fontSize: 11, color: COLORS.textMuted, marginTop: 4 }}>{email.email}</div>
+                      </div>
+                      <div style={{ fontSize: 11, color: COLORS.textMuted, fontFamily: FONTS.mono, whiteSpace: "nowrap", marginLeft: 16 }}>
+                        {email.date}
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+
+            {emailTab === "calendar" && (
+              <div>
+                <Card style={{ marginBottom: 16, background: `${COLORS.accent}08`, border: `1px solid ${COLORS.accent}25` }}>
+                  <div style={{ fontFamily: FONTS.display, fontSize: 16, fontWeight: 600, marginBottom: 4 }}>📅 Today — Thursday, February 26, 2026</div>
+                  <div style={{ fontSize: 12, color: COLORS.textMuted }}>5 events scheduled</div>
+                </Card>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {CALENDAR_EVENTS.map((evt, i) => (
+                    <Card key={evt.id} className="fade-in" style={{ padding: 14, borderLeft: `3px solid ${evt.color}`, animationDelay: `${i * 0.05}s` }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <div>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                            <span style={{ fontWeight: 600, fontSize: 14 }}>{evt.title}</span>
+                            <Badge color={evt.color} small>{evt.type}</Badge>
+                          </div>
+                          <div style={{ display: "flex", gap: 12, fontSize: 12, color: COLORS.textMuted }}>
+                            <span>🕐 {evt.time}</span>
+                            <span>👥 {evt.crew}</span>
+                          </div>
+                        </div>
+                        <Badge color={evt.date === "today" ? COLORS.accent : COLORS.textMuted} small>{evt.date}</Badge>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+                <Card style={{ marginTop: 16, padding: 14, border: `1px dashed ${COLORS.border}` }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <Icon name="add" size={16} color={COLORS.textMuted} />
+                    <span style={{ fontSize: 13, color: COLORS.textMuted }}>Quick add event — syncs to {service.name}</span>
+                  </div>
+                </Card>
+              </div>
+            )}
+
+            {emailTab === "compose" && (
+              <Card>
+                <h3 style={{ fontFamily: FONTS.display, fontSize: 16, fontWeight: 600, marginBottom: 16 }}>New Email</h3>
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  <div>
+                    <label style={{ fontSize: 11, fontFamily: FONTS.mono, color: COLORS.textMuted, letterSpacing: 1, display: "block", marginBottom: 4 }}>TO</label>
+                    <input placeholder="Recipient email..." style={{
+                      width: "100%", padding: "10px 14px", borderRadius: 8, border: `1px solid ${COLORS.border}`,
+                      background: COLORS.surface, color: COLORS.text, fontSize: 13, outline: "none",
+                    }} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 11, fontFamily: FONTS.mono, color: COLORS.textMuted, letterSpacing: 1, display: "block", marginBottom: 4 }}>SUBJECT</label>
+                    <input placeholder="Email subject..." style={{
+                      width: "100%", padding: "10px 14px", borderRadius: 8, border: `1px solid ${COLORS.border}`,
+                      background: COLORS.surface, color: COLORS.text, fontSize: 13, outline: "none",
+                    }} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 11, fontFamily: FONTS.mono, color: COLORS.textMuted, letterSpacing: 1, display: "block", marginBottom: 4 }}>MESSAGE</label>
+                    <textarea rows={8} placeholder="Write your email..." style={{
+                      width: "100%", padding: "10px 14px", borderRadius: 8, border: `1px solid ${COLORS.border}`,
+                      background: COLORS.surface, color: COLORS.text, fontSize: 13, outline: "none", resize: "vertical",
+                    }} />
+                  </div>
+                  <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+                    <Button variant="secondary" size="sm">Save Draft</Button>
+                    <Button icon="send" size="sm">Send via {service.name}</Button>
+                  </div>
+                </div>
+              </Card>
+            )}
+          </>
+        )}
+      </div>
+    );
+  }
+
+  // Integration hub main view
+  return (
+    <div style={{ padding: 32, overflowY: "auto", height: "100vh" }}>
+      <SectionHeader title="Integrations" subtitle="Connect email, calendar, and external services" />
+
+      <div style={{ marginBottom: 32 }}>
+        <div style={{ fontSize: 12, fontFamily: FONTS.mono, color: COLORS.textMuted, letterSpacing: 1, textTransform: "uppercase", marginBottom: 12 }}>Email & Calendar</div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+          {services.map((svc, i) => (
+            <Card key={svc.id} className="hover-lift" onClick={() => setActiveService(svc.id)}
+              style={{ cursor: "pointer", animationDelay: `${i * 0.08}s` }}>
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 16 }}>
+                <div style={{ width: 56, height: 56, borderRadius: 14, background: `${svc.color}18`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <Icon name="email" size={28} color={svc.color} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <h3 style={{ fontFamily: FONTS.display, fontSize: 18, fontWeight: 600 }}>{svc.name}</h3>
+                    <Badge color={svc.connected ? COLORS.success : COLORS.textMuted}>{svc.connected ? "Connected" : "Not Connected"}</Badge>
+                  </div>
+                  <p style={{ fontSize: 13, color: COLORS.textSecondary, marginTop: 4 }}>{svc.description}</p>
+                  <div style={{ display: "flex", gap: 6, marginTop: 10, flexWrap: "wrap" }}>
+                    {svc.features.map(f => <Badge key={f} color={COLORS.textMuted} small>{f}</Badge>)}
+                  </div>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ marginBottom: 32 }}>
+        <div style={{ fontSize: 12, fontFamily: FONTS.mono, color: COLORS.textMuted, letterSpacing: 1, textTransform: "uppercase", marginBottom: 12 }}>API Configuration</div>
+        <Card>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+            <div>
+              <h4 style={{ fontFamily: FONTS.display, fontSize: 14, fontWeight: 600, marginBottom: 12, color: "#0078D4" }}>Microsoft Graph API</h4>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {[
+                  { label: "Client ID", value: "••••••••-••••-••••-••••-••••••a3f8d2" },
+                  { label: "Tenant ID", value: "••••••••-••••-••••-••••-••••••7b1e09" },
+                  { label: "Redirect URI", value: "https://app.paving123.com/auth/microsoft/callback" },
+                  { label: "API Endpoint", value: "https://graph.microsoft.com/v1.0" },
+                ].map(item => (
+                  <div key={item.label} style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: `1px solid ${COLORS.border}08` }}>
+                    <span style={{ fontSize: 12, color: COLORS.textMuted }}>{item.label}</span>
+                    <span style={{ fontSize: 11, fontFamily: FONTS.mono, color: COLORS.textSecondary }}>{item.value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div>
+              <h4 style={{ fontFamily: FONTS.display, fontSize: 14, fontWeight: 600, marginBottom: 12, color: "#EA4335" }}>Google Workspace API</h4>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {[
+                  { label: "Client ID", value: "Not configured" },
+                  { label: "Client Secret", value: "Not configured" },
+                  { label: "Redirect URI", value: "https://app.paving123.com/auth/google/callback" },
+                  { label: "API Endpoint", value: "https://gmail.googleapis.com/gmail/v1" },
+                ].map(item => (
+                  <div key={item.label} style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: `1px solid ${COLORS.border}08` }}>
+                    <span style={{ fontSize: 12, color: COLORS.textMuted }}>{item.label}</span>
+                    <span style={{ fontSize: 11, fontFamily: FONTS.mono, color: item.value === "Not configured" ? COLORS.danger : COLORS.textSecondary }}>{item.value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      <div>
+        <div style={{ fontSize: 12, fontFamily: FONTS.mono, color: COLORS.textMuted, letterSpacing: 1, textTransform: "uppercase", marginBottom: 12 }}>How It Works</div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+          {[
+            { step: "1", title: "OAuth 2.0 Auth", desc: "Secure sign-in through Microsoft or Google. No passwords stored. Tokens refresh automatically." },
+            { step: "2", title: "Bi-Directional Sync", desc: "Emails tagged with project IDs auto-link to projects. Calendar events sync crew schedules in real-time." },
+            { step: "3", title: "Smart Routing", desc: "RFP-related emails auto-flag as leads. Client emails attach to project timelines. Vendor invoices route to inventory." },
+          ].map((item, i) => (
+            <Card key={i} className="fade-in" style={{ animationDelay: `${i * 0.1}s` }}>
+              <div style={{ width: 32, height: 32, borderRadius: 8, background: `${COLORS.accent}15`, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: FONTS.display, fontWeight: 700, color: COLORS.accent, fontSize: 16, marginBottom: 12 }}>{item.step}</div>
+              <h4 style={{ fontFamily: FONTS.display, fontSize: 15, fontWeight: 600, marginBottom: 6 }}>{item.title}</h4>
+              <p style={{ fontSize: 13, color: COLORS.textSecondary, lineHeight: 1.5 }}>{item.desc}</p>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // ─── MAIN APP ───────────────────────────────────────────
 export default function App() {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -1304,6 +1921,7 @@ export default function App() {
       case "inventory": return <InventoryView />;
       case "tracking": return <TrackingView />;
       case "leads": return <LeadsView />;
+      case "integrations": return <IntegrationsView />;
       default: return <DashboardView setActiveTab={setActiveTab} setSelectedProject={setSelectedProject} />;
     }
   };

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef, useMemo, createContext, useCo
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
+
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png",
@@ -157,6 +158,17 @@ const INVENTORY = [
   { id: 12, name: "Infrared Thermometer", unit: "units", qty: 3, minQty: 2, category: "Tools", cost: 150 },
   { id: 13, name: "Safety Cones", unit: "units", qty: 120, minQty: 50, category: "Safety", cost: 8 },
   { id: 14, name: "Safety Vests", unit: "units", qty: 35, minQty: 20, category: "Safety", cost: 15 },
+];
+
+const CONTACTS = [
+  ...EMPLOYEES.map(e => ({ ...e, type: "employee" })),
+  { id: 101, name: "Mr. Johnson", role: "Homeowner", type: "client", avatar: "MJ", status: "active", phone: "317-555-0333", project: "P-1001" },
+  { id: 102, name: "Linda Park", role: "Property Manager", type: "client", avatar: "LP", status: "active", phone: "614-555-0444", project: "P-1002", company: "Oak Park Shopping Center" },
+  { id: 103, name: "James Howard", role: "HOA President", type: "client", avatar: "JH", status: "active", phone: "937-555-0321", project: "P-1003", company: "Maple Grove HOA" },
+  { id: 104, name: "Dave Muller", role: "DOT Project Mgr", type: "client", avatar: "DM", status: "active", phone: "317-555-0111", project: "P-1004", company: "Marion County DOT" },
+  { id: 201, name: "Martin Supply Co.", role: "Asphalt & Aggregate", type: "vendor", avatar: "MS", status: "active", phone: "317-555-0777", email: "orders@martinsupply.com" },
+  { id: 202, name: "Midwest Sealcoat", role: "Sealcoat & Coatings", type: "vendor", avatar: "MW", status: "active", phone: "317-555-0888", email: "dispatch@mwseal.com" },
+  { id: 203, name: "SafetyFirst Rentals", role: "Equipment & Safety", type: "vendor", avatar: "SF", status: "active", phone: "614-555-0999", email: "sales@safetyfirst.com" },
 ];
 
 const CONTACTS = [
@@ -1216,6 +1228,7 @@ const MessagesView = ({ isMobile }) => {
   const [newMessage, setNewMessage] = useState("");
   const [showChannelList, setShowChannelList] = useState(!isMobile);
   const [showClientUpdate, setShowClientUpdate] = useState(false);
+  const [showClientUpdate, setShowClientUpdate] = useState(false);
   const messagesEndRef = useRef(null);
 
   const channels = [
@@ -1896,6 +1909,49 @@ const InventoryView = ({ isMobile }) => {
         </Card>
       )}
 
+      {/* Low Stock Auto-Alert Section */}
+      {INVENTORY.filter(i => i.qty <= i.minQty).length > 0 && (
+        <Card style={{ marginBottom: 20, border: `1px solid ${COLORS.danger}30` }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, flexWrap: "wrap", gap: 8 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ width: 8, height: 8, borderRadius: "50%", background: COLORS.danger, animation: "pulse 2s infinite" }} />
+              <span style={{ fontFamily: FONTS.display, fontSize: 15, fontWeight: 600, color: COLORS.danger }}>Low Stock Auto-Alerts</span>
+            </div>
+            <Badge color={COLORS.success} small>AUTO-REORDER ACTIVE</Badge>
+          </div>
+          <p style={{ fontSize: 12, color: COLORS.textSecondary, marginBottom: 12 }}>
+            When items drop below minimum quantities, the app automatically sends re-order texts and emails to the supplier.
+          </p>
+          {INVENTORY.filter(i => i.qty <= i.minQty).map(item => (
+            <div key={item.id} style={{
+              display: "flex", justifyContent: "space-between", alignItems: "center",
+              padding: "10px 14px", borderRadius: 8, background: `${COLORS.danger}08`,
+              border: `1px solid ${COLORS.danger}15`, marginBottom: 6, flexWrap: "wrap", gap: 8,
+            }}>
+              <div>
+                <div style={{ fontWeight: 600, fontSize: 13 }}>{item.name}</div>
+                <div style={{ fontSize: 11, color: COLORS.textMuted }}>
+                  {item.qty} {item.unit} remaining · Min: {item.minQty} {item.unit}
+                  {item.supplier && ` · Supplier: ${item.supplier}`}
+                </div>
+              </div>
+              <div style={{ display: "flex", gap: 6 }}>
+                <Badge color={COLORS.danger} small>Below minimum</Badge>
+                {item.supplier && (
+                  <button style={{
+                    padding: "4px 10px", borderRadius: 6, fontSize: 11, fontWeight: 600,
+                    background: `${COLORS.accent}15`, color: COLORS.accent, border: `1px solid ${COLORS.accent}30`,
+                    cursor: "pointer", fontFamily: FONTS.body,
+                  }}>
+                    Re-order from {item.supplier} →
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+        </Card>
+      )}
+
       <Card style={{ padding: 0, overflow: "hidden" }}>
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
@@ -2216,11 +2272,26 @@ const COST_REFERENCE = [
   { keyword: "edge form", material: "Edge Forms (10ft)", costPer: 22, unit: "piece", coversSqft: 10, depth: "linear-ft", note: "" },
 ];
 
+
+// ─── PAVING COST REFERENCE ───────────────────────────────
+const COST_REFERENCE = [
+  { keyword: "hma", material: "Hot Mix Asphalt", costPer: 85, unit: "ton", coversSqft: 80, depth: '2"', note: "$10,625 covers ~10,000 sqft" },
+  { keyword: "surface course", material: "HMA Surface Course", costPer: 85, unit: "ton", coversSqft: 110, depth: '1.5"', note: "" },
+  { keyword: "sealcoat", material: "Sealcoat", costPer: 3.75, unit: "gallon", coversSqft: 50, depth: "surface", note: "$0.075/sqft material cost" },
+  { keyword: "aggregate", material: "Crushed Aggregate Base", costPer: 28, unit: "ton", coversSqft: 100, depth: '4"', note: "" },
+  { keyword: "tack coat", material: "Tack Coat Emulsion", costPer: 4.50, unit: "gallon", coversSqft: 55, depth: "bond", note: "" },
+  { keyword: "cold patch", material: "Cold Patch", costPer: 12, unit: "bag", coversSqft: 4, depth: '2"', note: "Quick-set pothole fill" },
+  { keyword: "crack filler", material: "Crack Filler", costPer: 18, unit: "gallon", coversSqft: 30, depth: "fill", note: "" },
+  { keyword: "striping", material: "Striping Paint", costPer: 32, unit: "gallon", coversSqft: 400, depth: "line-ft", note: "~400 linear ft per gallon" },
+  { keyword: "edge form", material: "Edge Forms (10ft)", costPer: 22, unit: "piece", coversSqft: 10, depth: "linear-ft", note: "" },
+];
+
 // ─── ESTIMATES & BILLING VIEW ────────────────────────────
 const EstimatesView = ({ isMobile }) => {
   const [tab, setTab] = useState("estimates");
   const [showCreate, setShowCreate] = useState(false);
   const [newEst, setNewEst] = useState({ client: "", project: "", items: [{ desc: "", qty: 1, rate: 0 }] });
+  const [sendingEst, setSendingEst] = useState(null);
   const [sendingEst, setSendingEst] = useState(null);
 
   const addItem = () => setNewEst(prev => ({ ...prev, items: [...prev.items, { desc: "", qty: 1, rate: 0 }] }));

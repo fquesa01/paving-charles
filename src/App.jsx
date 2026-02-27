@@ -2,6 +2,17 @@ import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 
+// ─── MOBILE DETECTION ──────────────────────────────────
+const useIsMobile = (breakpoint = 768) => {
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= breakpoint);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth <= breakpoint);
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, [breakpoint]);
+  return isMobile;
+};
+
 const COLORS = {
   bg: "#0F1114",
   surface: "#1A1D23",
@@ -496,6 +507,7 @@ const GlobalStyles = () => (
     @keyframes slideIn { from { opacity: 0; transform: translateX(-12px); } to { opacity: 1; transform: translateX(0); } }
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
     @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+    @keyframes slideInLeft { from { transform: translateX(-100%); } to { transform: translateX(0); } }
     
     .fade-in { animation: fadeIn 0.4s ease-out forwards; }
     .slide-in { animation: slideIn 0.3s ease-out forwards; }
@@ -505,18 +517,72 @@ const GlobalStyles = () => (
     .glow-amber { box-shadow: 0 0 20px rgba(245, 158, 11, 0.15); }
     .hover-lift { transition: transform 0.2s, box-shadow 0.2s; }
     .hover-lift:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+
+    /* ─── MOBILE RESPONSIVE ─────────────────────── */
+    .mobile-header { display: none; }
+    .sidebar-overlay { display: none; }
+
+    @media (max-width: 768px) {
+      .mobile-header {
+        display: flex; align-items: center; gap: 12px;
+        padding: 12px 16px; background: ${COLORS.surface};
+        border-bottom: 1px solid ${COLORS.border};
+        position: sticky; top: 0; z-index: 50;
+      }
+      .mobile-header button {
+        background: none; border: none; color: ${COLORS.text};
+        cursor: pointer; padding: 6px; border-radius: 6px;
+        display: flex; align-items: center; justify-content: center;
+      }
+      .sidebar-desktop { 
+        position: fixed; left: 0; top: 0; z-index: 100;
+        transform: translateX(-100%);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        width: 260px !important;
+      }
+      .sidebar-desktop.sidebar-open {
+        transform: translateX(0);
+      }
+      .sidebar-overlay {
+        display: block; position: fixed; inset: 0; z-index: 99;
+        background: rgba(0,0,0,0.6); opacity: 0;
+        transition: opacity 0.3s; pointer-events: none;
+      }
+      .sidebar-overlay.sidebar-open {
+        opacity: 1; pointer-events: auto;
+      }
+      
+      .view-container { padding: 16px !important; }
+      .section-header h1 { font-size: 24px !important; }
+      
+      .grid-4 { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
+      .grid-3 { grid-template-columns: 1fr !important; gap: 10px !important; }
+      .grid-2 { grid-template-columns: 1fr !important; gap: 10px !important; }
+      .grid-2-keep { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
+      .grid-sidebar { grid-template-columns: 1fr !important; gap: 12px !important; }
+      
+      .msg-layout { grid-template-columns: 1fr !important; }
+      .msg-sidebar { display: none; }
+      .msg-sidebar.msg-sidebar-show { display: flex; position: fixed; left: 0; top: 0; width: 280px; height: 100vh; z-index: 90; background: ${COLORS.surface}; border-right: 1px solid ${COLORS.border}; }
+      
+      .map-grid { grid-template-columns: 1fr !important; }
+      .map-container { min-height: 300px !important; height: 300px !important; }
+      .map-sidebar-cards { max-height: 300px !important; }
+      
+      .detail-sidebar { position: fixed !important; right: 0; top: 0; width: 90vw !important; max-width: 400px; height: 100vh; z-index: 80; overflow-y: auto; margin: 0 !important; border-radius: 0 !important; border-left: 1px solid ${COLORS.border}; }
+      
+      .lead-grid { grid-template-columns: 1fr !important; }
+      .source-grid { grid-template-columns: repeat(2, 1fr) !important; }
+      .integ-grid { grid-template-columns: 1fr !important; }
+      .api-grid { grid-template-columns: 1fr !important; }
+      .steps-grid { grid-template-columns: 1fr !important; }
+    }
     
-    /* Leaflet dark theme overrides */
-    .leaflet-container { background: ${COLORS.bg} !important; border-radius: 12px; }
-    .leaflet-control-zoom { border: 1px solid ${COLORS.border} !important; border-radius: 8px !important; overflow: hidden; }
-    .leaflet-control-zoom a { background: ${COLORS.surface} !important; color: ${COLORS.text} !important; border-color: ${COLORS.border} !important; width: 32px !important; height: 32px !important; line-height: 32px !important; font-size: 16px !important; }
-    .leaflet-control-zoom a:hover { background: ${COLORS.surfaceHover} !important; }
-    .leaflet-control-attribution { background: ${COLORS.bg}CC !important; color: ${COLORS.textMuted} !important; font-size: 9px !important; font-family: ${FONTS.mono} !important; border-radius: 4px 0 0 0 !important; }
-    .leaflet-control-attribution a { color: ${COLORS.textMuted} !important; }
-    .leaflet-popup-content-wrapper { background: ${COLORS.card} !important; color: ${COLORS.text} !important; border-radius: 10px !important; border: 1px solid ${COLORS.border} !important; box-shadow: 0 8px 32px rgba(0,0,0,0.5) !important; }
-    .leaflet-popup-tip { background: ${COLORS.card} !important; border: 1px solid ${COLORS.border} !important; }
-    .leaflet-popup-close-button { color: ${COLORS.textMuted} !important; font-size: 18px !important; }
-    .leaflet-popup-close-button:hover { color: ${COLORS.text} !important; }
+    @media (max-width: 480px) {
+      .grid-4 { grid-template-columns: 1fr !important; }
+      .source-grid { grid-template-columns: 1fr !important; }
+      .grid-2-keep { grid-template-columns: 1fr !important; }
+    }
   `}</style>
 );
 
@@ -581,9 +647,9 @@ const Button = ({ children, variant = "primary", size = "md", onClick, style, ic
 };
 
 const SectionHeader = ({ title, subtitle, action }) => (
-  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+  <div className="section-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20, gap: 12, flexWrap: "wrap" }}>
     <div>
-      <h2 style={{ fontFamily: FONTS.display, fontSize: 22, fontWeight: 600, letterSpacing: "0.5px", color: COLORS.text }}>{title}</h2>
+      <h1 style={{ fontFamily: FONTS.display, fontSize: 22, fontWeight: 600, letterSpacing: "0.5px", color: COLORS.text }}>{title}</h1>
       {subtitle && <p style={{ fontSize: 13, color: COLORS.textMuted, marginTop: 2 }}>{subtitle}</p>}
     </div>
     {action}
@@ -696,7 +762,7 @@ const Sidebar = ({ activeTab, setActiveTab, collapsed, setCollapsed }) => {
 };
 
 // ─── DASHBOARD ──────────────────────────────────────────
-const DashboardView = ({ setActiveTab, setSelectedProject }) => {
+const DashboardView = ({ setActiveTab, setSelectedProject, isMobile }) => {
   const stats = [
     { label: "Active Projects", value: "2", sub: "+1 bidding", icon: "projects", color: COLORS.accent },
     { label: "Crew Members Active", value: "5", sub: "of 8 total", icon: "people", color: COLORS.success },
@@ -705,7 +771,7 @@ const DashboardView = ({ setActiveTab, setSelectedProject }) => {
   ];
 
   return (
-    <div style={{ padding: 32, overflowY: "auto", height: "100vh" }}>
+    <div style={{ padding: isMobile ? 16 : 32, overflowY: "auto", height: "100vh" }}>
       <div style={{ marginBottom: 32 }}>
         <h1 style={{ fontFamily: FONTS.display, fontSize: 32, fontWeight: 700, letterSpacing: "1px" }}>
           Good morning, Sarah
@@ -715,7 +781,7 @@ const DashboardView = ({ setActiveTab, setSelectedProject }) => {
         </p>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 32 }}>
+      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(4, 1fr)", gap: isMobile ? 10 : 16, marginBottom: 24 }}>
         {stats.map((s, i) => (
           <Card key={i} className="hover-lift" style={{ animationDelay: `${i * 0.08}s` }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
@@ -732,7 +798,7 @@ const DashboardView = ({ setActiveTab, setSelectedProject }) => {
         ))}
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 32 }}>
+      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: isMobile ? 12 : 20, marginBottom: 24 }}>
         <Card>
           <SectionHeader title="Active Projects" action={<Button variant="ghost" size="sm" onClick={() => setActiveTab("projects")}>View All →</Button>} />
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -775,7 +841,7 @@ const DashboardView = ({ setActiveTab, setSelectedProject }) => {
         </Card>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: isMobile ? 12 : 20 }}>
         <Card>
           <SectionHeader title="Inventory Alerts" action={<Button variant="ghost" size="sm" onClick={() => setActiveTab("inventory")}>Manage →</Button>} />
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -821,7 +887,7 @@ const DashboardView = ({ setActiveTab, setSelectedProject }) => {
 };
 
 // ─── MESSAGES VIEW ──────────────────────────────────────
-const MessagesView = () => {
+const MessagesView = ({ isMobile }) => {
   const [activeChannel, setActiveChannel] = useState("alpha-crew");
   const [messages, setMessages] = useState(MESSAGES);
   const [newMessage, setNewMessage] = useState("");
@@ -858,7 +924,7 @@ const MessagesView = () => {
         <div style={{ padding: "12px 8px", flex: 1 }}>
           <div style={{ fontSize: 10, color: COLORS.textMuted, fontFamily: FONTS.mono, letterSpacing: 1, padding: "8px 10px", textTransform: "uppercase" }}>Channels</div>
           {channels.map(ch => (
-            <button key={ch.id} onClick={() => setActiveChannel(ch.id)}
+            <button key={ch.id} onClick={() => handleChannelSelect(ch.id)}
               style={{
                 display: "flex", alignItems: "center", justifyContent: "space-between",
                 width: "100%", padding: "10px 12px", borderRadius: 8, border: "none", cursor: "pointer",
@@ -888,11 +954,19 @@ const MessagesView = () => {
         </div>
       </div>
 
-      <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
         <div style={{ padding: "16px 24px", borderBottom: `1px solid ${COLORS.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div>
-            <h3 style={{ fontFamily: FONTS.display, fontSize: 16, fontWeight: 600 }}>#{channels.find(c => c.id === activeChannel)?.name}</h3>
-            <span style={{ fontSize: 11, color: COLORS.textMuted }}>{channels.find(c => c.id === activeChannel)?.members} members</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <button className="msg-back-btn" onClick={() => setMobileShowChannels(true)} style={{
+              background: "none", border: "none", cursor: "pointer", color: COLORS.textMuted,
+              padding: 4, alignItems: "center", justifyContent: "center",
+            }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+            </button>
+            <div>
+              <h3 style={{ fontFamily: FONTS.display, fontSize: 16, fontWeight: 600 }}>#{channels.find(c => c.id === activeChannel)?.name}</h3>
+              <span style={{ fontSize: 11, color: COLORS.textMuted }}>{channels.find(c => c.id === activeChannel)?.members} members</span>
+            </div>
           </div>
           <div style={{ display: "flex", gap: 8 }}>
             <Badge color={COLORS.success} small>LOGGED</Badge>
@@ -941,7 +1015,7 @@ const MessagesView = () => {
 };
 
 // ─── PROJECTS VIEW ──────────────────────────────────────
-const ProjectsView = ({ selectedProject, setSelectedProject }) => {
+const ProjectsView = ({ selectedProject, setSelectedProject, isMobile }) => {
   const [projects, setProjects] = useState(PROJECTS);
   const [newItem, setNewItem] = useState("");
 
@@ -973,7 +1047,7 @@ const ProjectsView = ({ selectedProject, setSelectedProject }) => {
     const computedProgress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
     return (
-      <div style={{ padding: 32, overflowY: "auto", height: "100vh" }}>
+      <div style={{ padding: isMobile ? 16 : 32, overflowY: "auto", height: "100vh" }}>
         <button onClick={() => setSelectedProject(null)}
           style={{ display: "flex", alignItems: "center", gap: 4, background: "none", border: "none", color: COLORS.textMuted, fontSize: 13, cursor: "pointer", marginBottom: 20, fontFamily: FONTS.body }}>
           ← Back to Projects
@@ -999,7 +1073,7 @@ const ProjectsView = ({ selectedProject, setSelectedProject }) => {
           </div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: isMobile ? 12 : 20 }}>
           <Card>
             <SectionHeader title="Project Checklist" subtitle={`${completedTasks} of ${totalTasks} tasks completed (${computedProgress}%)`} />
             <ProgressBar value={computedProgress} height={8} color={COLORS.success} />
@@ -1079,7 +1153,7 @@ const ProjectsView = ({ selectedProject, setSelectedProject }) => {
   }
 
   return (
-    <div style={{ padding: 32, overflowY: "auto", height: "100vh" }}>
+    <div style={{ padding: isMobile ? 16 : 32, overflowY: "auto", height: "100vh" }}>
       <SectionHeader title="Project Management" subtitle="All active, bidding, and completed projects"
         action={<Button icon="add">New Project</Button>} />
 
@@ -1089,7 +1163,7 @@ const ProjectsView = ({ selectedProject, setSelectedProject }) => {
         ))}
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: isMobile ? 10 : 16 }}>
         {projects.map((p, i) => {
           const completed = p.checklist.filter(c => c.done).length;
           const total = p.checklist.length;
@@ -1131,7 +1205,7 @@ const ProjectsView = ({ selectedProject, setSelectedProject }) => {
 };
 
 // ─── INVENTORY VIEW ─────────────────────────────────────
-const InventoryView = () => {
+const InventoryView = ({ isMobile }) => {
   const [filter, setFilter] = useState("All");
   const categories = ["All", "Materials", "Equipment", "Tools", "Safety"];
 
@@ -1139,7 +1213,7 @@ const InventoryView = () => {
   const totalValue = INVENTORY.reduce((sum, i) => sum + i.qty * i.cost, 0);
 
   return (
-    <div style={{ padding: 32, overflowY: "auto", height: "100vh" }}>
+    <div style={{ padding: isMobile ? 16 : 32, overflowY: "auto", height: "100vh" }}>
       <SectionHeader title="Inventory Management" subtitle={`${INVENTORY.length} items tracked • Total value: $${totalValue.toLocaleString()}`}
         action={<Button icon="add">Add Item</Button>} />
 
@@ -1149,7 +1223,7 @@ const InventoryView = () => {
         ))}
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 24 }}>
+      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(4, 1fr)", gap: 12, marginBottom: 24 }}>
         {[
           { label: "Total Items", value: INVENTORY.length, color: COLORS.accent },
           { label: "Low Stock", value: INVENTORY.filter(i => i.qty <= i.minQty).length, color: COLORS.danger },
@@ -1258,7 +1332,7 @@ const MapBoundsUpdater = ({ positions }) => {
 };
 
 // ─── FLEET & CREW TRACKING ──────────────────────────────
-const TrackingView = () => {
+const TrackingView = ({ isMobile }) => {
   const [tab, setTab] = useState("vehicles");
   const [selectedItem, setSelectedItem] = useState(null);
 
@@ -1271,7 +1345,7 @@ const TrackingView = () => {
       });
 
   return (
-    <div style={{ padding: 32, overflowY: "auto", height: "100vh" }}>
+    <div style={{ padding: isMobile ? 16 : 32, overflowY: "auto", height: "100vh" }}>
       <SectionHeader title="Fleet & Crew Tracking" subtitle="Real-time vehicle and employee locations" />
 
       <div style={{ display: "flex", gap: 8, marginBottom: 24 }}>
@@ -1279,7 +1353,7 @@ const TrackingView = () => {
         <Button variant={tab === "employees" ? "primary" : "secondary"} size="sm" icon="people" onClick={() => { setTab("employees"); setSelectedItem(null); }}>Employees ({EMPLOYEES.length})</Button>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 380px", gap: 20 }}>
+      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 380px", gap: isMobile ? 12 : 20 }}>
         <Card style={{ padding: 0, overflow: "hidden", minHeight: 560, borderRadius: 12 }}>
           <MapContainer
             center={mapCenter}
@@ -1433,7 +1507,7 @@ const TrackingView = () => {
 };
 
 // ─── LEAD INTELLIGENCE VIEW ─────────────────────────────
-const LeadsView = () => {
+const LeadsView = ({ isMobile }) => {
   const [typeFilter, setTypeFilter] = useState("All");
   const [selectedLead, setSelectedLead] = useState(null);
   const [viewTab, setViewTab] = useState("leads"); // "leads" | "sources"
@@ -1454,7 +1528,7 @@ const LeadsView = () => {
 
   if (viewTab === "sources") {
     return (
-      <div style={{ padding: 32, overflowY: "auto", height: "100vh" }}>
+      <div style={{ padding: isMobile ? 16 : 32, overflowY: "auto", height: "100vh" }}>
         <SectionHeader
           title="Lead Data Sources & Scraping Configuration"
           subtitle={`${allSources.length} sources configured — Auto-scraping every 24 hours`}
@@ -1466,7 +1540,7 @@ const LeadsView = () => {
           }
         />
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 24 }}>
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(4, 1fr)", gap: 12, marginBottom: 24 }}>
           {[
             { label: "National / Federal", count: DATA_SOURCES.federal.length, key: "federal", color: COLORS.info, desc: "EMMA, SAM.gov, FHWA, Bond Buyer" },
             { label: "Procurement Platforms", count: DATA_SOURCES.procurement.length, key: "procurement", color: COLORS.accent, desc: "BidNet, DemandStar, GovWin" },
@@ -1532,7 +1606,7 @@ const LeadsView = () => {
   }
 
   return (
-    <div style={{ padding: 32, overflowY: "auto", height: "100vh" }}>
+    <div style={{ padding: isMobile ? 16 : 32, overflowY: "auto", height: "100vh" }}>
       <SectionHeader
         title="Lead Intelligence Center"
         subtitle="Auto-scraped bonds, permits, and RFPs from public sources"
@@ -1547,7 +1621,7 @@ const LeadsView = () => {
         }
       />
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 24 }}>
+      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)", gap: 12, marginBottom: 24 }}>
         {[
           { type: "Bond", icon: "money", desc: "Infrastructure bonds with road/paving allocations", count: LEADS.filter(l => l.type === "Bond").length },
           { type: "RFP", icon: "projects", desc: "Procurement requests for paving services", count: LEADS.filter(l => l.type === "RFP").length },
@@ -1570,7 +1644,7 @@ const LeadsView = () => {
         ))}
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: selectedLead ? "1fr 400px" : "1fr", gap: 20 }}>
+      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : (selectedLead ? "1fr 400px" : "1fr"), gap: 20 }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           {filtered.map((lead, i) => (
             <Card key={lead.id} onClick={() => setSelectedLead(lead)}
@@ -1673,7 +1747,7 @@ const LeadsView = () => {
 };
 
 // ─── INTEGRATIONS VIEW (EMAIL / CALENDAR) ────────────────
-const IntegrationsView = () => {
+const IntegrationsView = ({ isMobile }) => {
   const [activeService, setActiveService] = useState(null);
   const [emailTab, setEmailTab] = useState("inbox");
 
@@ -1700,7 +1774,7 @@ const IntegrationsView = () => {
   if (activeService) {
     const service = services.find(s => s.id === activeService);
     return (
-      <div style={{ padding: 32, overflowY: "auto", height: "100vh" }}>
+      <div style={{ padding: isMobile ? 16 : 32, overflowY: "auto", height: "100vh" }}>
         <button onClick={() => setActiveService(null)}
           style={{ display: "flex", alignItems: "center", gap: 4, background: "none", border: "none", color: COLORS.textMuted, fontSize: 13, cursor: "pointer", marginBottom: 20, fontFamily: FONTS.body }}>
           ← Back to Integrations
@@ -1851,12 +1925,12 @@ const IntegrationsView = () => {
 
   // Integration hub main view
   return (
-    <div style={{ padding: 32, overflowY: "auto", height: "100vh" }}>
+    <div style={{ padding: isMobile ? 16 : 32, overflowY: "auto", height: "100vh" }}>
       <SectionHeader title="Integrations" subtitle="Connect email, calendar, and external services" />
 
       <div style={{ marginBottom: 32 }}>
         <div style={{ fontSize: 12, fontFamily: FONTS.mono, color: COLORS.textMuted, letterSpacing: 1, textTransform: "uppercase", marginBottom: 12 }}>Email & Calendar</div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: isMobile ? 10 : 16 }}>
           {services.map((svc, i) => (
             <Card key={svc.id} className="hover-lift" onClick={() => setActiveService(svc.id)}
               style={{ cursor: "pointer", animationDelay: `${i * 0.08}s` }}>
@@ -1883,7 +1957,7 @@ const IntegrationsView = () => {
       <div style={{ marginBottom: 32 }}>
         <div style={{ fontSize: 12, fontFamily: FONTS.mono, color: COLORS.textMuted, letterSpacing: 1, textTransform: "uppercase", marginBottom: 12 }}>API Configuration</div>
         <Card>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: isMobile ? 12 : 20 }}>
             <div>
               <h4 style={{ fontFamily: FONTS.display, fontSize: 14, fontWeight: 600, marginBottom: 12, color: "#0078D4" }}>Microsoft Graph API</h4>
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -1922,7 +1996,7 @@ const IntegrationsView = () => {
 
       <div>
         <div style={{ fontSize: 12, fontFamily: FONTS.mono, color: COLORS.textMuted, letterSpacing: 1, textTransform: "uppercase", marginBottom: 12 }}>How It Works</div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)", gap: 12 }}>
           {[
             { step: "1", title: "OAuth 2.0 Auth", desc: "Secure sign-in through Microsoft or Google. No passwords stored. Tokens refresh automatically." },
             { step: "2", title: "Bi-Directional Sync", desc: "Emails tagged with project IDs auto-link to projects. Calendar events sync crew schedules in real-time." },
@@ -1945,6 +2019,13 @@ export default function App() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [selectedProject, setSelectedProject] = useState(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const isMobile = useIsMobile();
+
+  const handleNav = (tab) => {
+    setActiveTab(tab);
+    setMobileSidebarOpen(false);
+  };
 
   const renderView = () => {
     switch (activeTab) {

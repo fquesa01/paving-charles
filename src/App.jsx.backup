@@ -591,7 +591,7 @@ const SectionHeader = ({ title, subtitle, action }) => (
 );
 
 // ─── SIDEBAR ─────────────────────────────────────────────
-const Sidebar = ({ activeTab, setActiveTab, collapsed, setCollapsed }) => {
+const Sidebar = ({ activeTab, setActiveTab }) => {
   const navItems = [
     { id: "dashboard", icon: "dashboard", label: "Dashboard" },
     { id: "messages", icon: "messages", label: "Comms Portal", badge: 3 },
@@ -604,93 +604,61 @@ const Sidebar = ({ activeTab, setActiveTab, collapsed, setCollapsed }) => {
 
   return (
     <div style={{
-      width: collapsed ? 64 : 240, background: COLORS.surface, borderRight: `1px solid ${COLORS.border}`,
+      width: 240, background: COLORS.surface, borderRight: `1px solid ${COLORS.border}`,
       display: "flex", flexDirection: "column", height: "100vh", flexShrink: 0,
-      transition: "width 0.25s cubic-bezier(0.4, 0, 0.2, 1)", overflow: "hidden",
     }}>
-      <div style={{ padding: collapsed ? "24px 12px" : "24px 20px", borderBottom: `1px solid ${COLORS.border}`, display: "flex", alignItems: "center", justifyContent: collapsed ? "center" : "space-between", minHeight: 88 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, overflow: "hidden" }}>
+      <div style={{ padding: "24px 20px", borderBottom: `1px solid ${COLORS.border}` }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <div style={{
-            width: 40, height: 40, minWidth: 40, borderRadius: 10, background: `linear-gradient(135deg, ${COLORS.accent}, ${COLORS.accentDark})`,
+            width: 40, height: 40, borderRadius: 10, background: `linear-gradient(135deg, ${COLORS.accent}, ${COLORS.accentDark})`,
             display: "flex", alignItems: "center", justifyContent: "center", fontFamily: FONTS.display,
-            fontWeight: 800, fontSize: 16, color: "#000", letterSpacing: 1, cursor: "pointer",
-          }} onClick={() => setCollapsed(!collapsed)}>P</div>
-          {!collapsed && (
-            <div style={{ whiteSpace: "nowrap" }}>
-              <div style={{ fontFamily: FONTS.display, fontWeight: 700, fontSize: 18, letterSpacing: 1, lineHeight: 1 }}>PAVING 123</div>
-              <div style={{ fontSize: 10, color: COLORS.textMuted, fontFamily: FONTS.mono, letterSpacing: 1, marginTop: 2 }}>OPS PLATFORM</div>
-            </div>
-          )}
+            fontWeight: 800, fontSize: 16, color: "#000", letterSpacing: 1,
+          }}>P</div>
+          <div>
+            <div style={{ fontFamily: FONTS.display, fontWeight: 700, fontSize: 18, letterSpacing: 1, lineHeight: 1 }}>PAVING 123</div>
+            <div style={{ fontSize: 10, color: COLORS.textMuted, fontFamily: FONTS.mono, letterSpacing: 1, marginTop: 2 }}>OPS PLATFORM</div>
+          </div>
         </div>
-        {!collapsed && (
-          <button onClick={() => setCollapsed(true)} title="Collapse sidebar" style={{
-            background: "none", border: "none", cursor: "pointer", color: COLORS.textMuted,
-            padding: 4, borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center",
-            transition: "color 0.2s",
-          }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" /></svg>
-          </button>
-        )}
       </div>
 
-      <nav style={{ flex: 1, padding: collapsed ? "12px 6px" : "12px 8px", display: "flex", flexDirection: "column", gap: 2 }}>
+      <nav style={{ flex: 1, padding: "12px 8px", display: "flex", flexDirection: "column", gap: 2 }}>
         {navItems.map(item => (
           <button
             key={item.id}
             onClick={() => setActiveTab(item.id)}
-            title={collapsed ? item.label : undefined}
             style={{
-              display: "flex", alignItems: "center", gap: 12, padding: collapsed ? "10px 0" : "10px 14px",
-              justifyContent: collapsed ? "center" : "flex-start",
+              display: "flex", alignItems: "center", gap: 12, padding: "10px 14px",
               borderRadius: 8, border: "none", cursor: "pointer", fontFamily: FONTS.body,
               fontSize: 14, fontWeight: activeTab === item.id ? 600 : 400, width: "100%", textAlign: "left",
               background: activeTab === item.id ? `${COLORS.accent}15` : "transparent",
               color: activeTab === item.id ? COLORS.accent : COLORS.textSecondary,
-              transition: "all 0.2s", position: "relative", overflow: "hidden", whiteSpace: "nowrap",
+              transition: "all 0.2s", position: "relative",
             }}
           >
             {activeTab === item.id && (
               <div style={{ position: "absolute", left: 0, top: "50%", transform: "translateY(-50%)", width: 3, height: 20, background: COLORS.accent, borderRadius: 2 }} />
             )}
             <Icon name={item.icon} size={18} />
-            {!collapsed && <span>{item.label}</span>}
-            {item.badge && !collapsed && (
+            <span>{item.label}</span>
+            {item.badge && (
               <span style={{
                 marginLeft: "auto", background: COLORS.danger, color: "#fff", fontSize: 10,
                 fontWeight: 700, padding: "1px 6px", borderRadius: 10, fontFamily: FONTS.mono,
               }}>{item.badge}</span>
             )}
-            {item.badge && collapsed && (
-              <span style={{
-                position: "absolute", top: 4, right: 6, width: 8, height: 8,
-                borderRadius: "50%", background: COLORS.danger,
-              }} />
-            )}
           </button>
         ))}
       </nav>
 
-      {collapsed ? (
-        <div style={{ padding: "16px 0", borderTop: `1px solid ${COLORS.border}`, display: "flex", justifyContent: "center" }}>
-          <button onClick={() => setCollapsed(false)} title="Expand sidebar" style={{
-            background: "none", border: "none", cursor: "pointer", color: COLORS.textMuted,
-            padding: 6, borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center",
-            transition: "color 0.2s",
-          }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" /></svg>
-          </button>
-        </div>
-      ) : (
-        <div style={{ padding: "16px 12px", borderTop: `1px solid ${COLORS.border}` }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px" }}>
-            <Avatar initials="SC" size={32} color={COLORS.success} />
-            <div>
-              <div style={{ fontSize: 13, fontWeight: 600 }}>Sarah Chen</div>
-              <div style={{ fontSize: 10, color: COLORS.textMuted, fontFamily: FONTS.mono }}>Project Manager</div>
-            </div>
+      <div style={{ padding: "16px 12px", borderTop: `1px solid ${COLORS.border}` }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px" }}>
+          <Avatar initials="SC" size={32} color={COLORS.success} />
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 600 }}>Sarah Chen</div>
+            <div style={{ fontSize: 10, color: COLORS.textMuted, fontFamily: FONTS.mono }}>Project Manager</div>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };
@@ -1944,7 +1912,6 @@ const IntegrationsView = () => {
 export default function App() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [selectedProject, setSelectedProject] = useState(null);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const renderView = () => {
     switch (activeTab) {
@@ -1963,7 +1930,7 @@ export default function App() {
     <>
       <GlobalStyles />
       <div style={{ display: "flex", height: "100vh", overflow: "hidden", background: COLORS.bg }}>
-        <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} collapsed={sidebarCollapsed} setCollapsed={setSidebarCollapsed} />
+        <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
         <main style={{ flex: 1, overflow: "hidden" }}>
           {renderView()}
         </main>

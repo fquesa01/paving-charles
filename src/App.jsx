@@ -3,7 +3,6 @@ import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
-// Fix Leaflet default marker icons
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png",
@@ -965,7 +964,7 @@ const HomeView = ({ setActiveTab, setSelectedProject, isMobile }) => {
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "100vh", padding: isMobile ? 20 : 40, overflowY: "auto" }}>
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: isMobile ? "flex-start" : "center", height: "100vh", padding: isMobile ? "24px 20px" : 40, overflowY: "auto" }}>
       <div style={{ width: "100%", maxWidth: 680, textAlign: "center" }}>
         {/* Logo & Greeting */}
         <div style={{

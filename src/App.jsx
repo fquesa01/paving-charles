@@ -2028,26 +2028,67 @@ export default function App() {
   };
 
   const renderView = () => {
+    const props = { isMobile };
     switch (activeTab) {
-      case "dashboard": return <DashboardView setActiveTab={setActiveTab} setSelectedProject={setSelectedProject} />;
-      case "messages": return <MessagesView />;
-      case "projects": return <ProjectsView selectedProject={selectedProject} setSelectedProject={setSelectedProject} />;
-      case "inventory": return <InventoryView />;
-      case "tracking": return <TrackingView />;
-      case "leads": return <LeadsView />;
-      case "integrations": return <IntegrationsView />;
-      default: return <DashboardView setActiveTab={setActiveTab} setSelectedProject={setSelectedProject} />;
+      case "dashboard": return <DashboardView setActiveTab={handleNav} setSelectedProject={setSelectedProject} {...props} />;
+      case "messages": return <MessagesView {...props} />;
+      case "projects": return <ProjectsView selectedProject={selectedProject} setSelectedProject={setSelectedProject} {...props} />;
+      case "inventory": return <InventoryView {...props} />;
+      case "tracking": return <TrackingView {...props} />;
+      case "leads": return <LeadsView {...props} />;
+      case "integrations": return <IntegrationsView {...props} />;
+      default: return <DashboardView setActiveTab={handleNav} setSelectedProject={setSelectedProject} {...props} />;
     }
   };
+
+  const tabLabels = { dashboard: "Dashboard", messages: "Comms Portal", projects: "Projects", inventory: "Inventory", tracking: "Fleet & Crew", leads: "Lead Intel", integrations: "Integrations" };
 
   return (
     <>
       <GlobalStyles />
       <div style={{ display: "flex", height: "100vh", overflow: "hidden", background: COLORS.bg }}>
-        <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} collapsed={sidebarCollapsed} setCollapsed={setSidebarCollapsed} />
-        <main style={{ flex: 1, overflow: "hidden" }}>
-          {renderView()}
-        </main>
+        {!isMobile && (
+          <Sidebar activeTab={activeTab} setActiveTab={handleNav} collapsed={sidebarCollapsed} setCollapsed={setSidebarCollapsed} />
+        )}
+        {isMobile && mobileSidebarOpen && (
+          <>
+            <div onClick={() => setMobileSidebarOpen(false)} style={{
+              position: "fixed", inset: 0, zIndex: 99, background: "rgba(0,0,0,0.6)",
+            }} />
+            <div style={{
+              position: "fixed", left: 0, top: 0, zIndex: 100, width: 280, height: "100vh",
+              background: COLORS.surface, borderRight: `1px solid ${COLORS.border}`,
+              animation: "slideInLeft 0.25s ease-out",
+            }}>
+              <Sidebar activeTab={activeTab} setActiveTab={handleNav} collapsed={false} setCollapsed={() => {}} />
+            </div>
+          </>
+        )}
+        <div style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column", minWidth: 0 }}>
+          {isMobile && (
+            <div style={{
+              display: "flex", alignItems: "center", gap: 12,
+              padding: "10px 16px", background: COLORS.surface,
+              borderBottom: `1px solid ${COLORS.border}`, flexShrink: 0,
+            }}>
+              <button onClick={() => setMobileSidebarOpen(true)} style={{
+                background: "none", border: "none", color: COLORS.text,
+                cursor: "pointer", padding: 4, display: "flex",
+              }}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+              </button>
+              <div style={{
+                width: 28, height: 28, borderRadius: 7, background: `linear-gradient(135deg, ${COLORS.accent}, ${COLORS.accentDark})`,
+                display: "flex", alignItems: "center", justifyContent: "center", fontFamily: FONTS.display,
+                fontWeight: 800, fontSize: 12, color: "#000", flexShrink: 0,
+              }}>P</div>
+              <span style={{ fontFamily: FONTS.display, fontWeight: 600, fontSize: 15 }}>{tabLabels[activeTab]}</span>
+            </div>
+          )}
+          <main style={{ flex: 1, overflow: "hidden" }}>
+            {renderView()}
+          </main>
+        </div>
       </div>
     </>
   );

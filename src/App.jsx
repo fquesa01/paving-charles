@@ -1,4 +1,6 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import L from "leaflet";
 
 const COLORS = {
   bg: "#0F1114",
@@ -248,6 +250,18 @@ const GlobalStyles = () => (
     .glow-amber { box-shadow: 0 0 20px rgba(245, 158, 11, 0.15); }
     .hover-lift { transition: transform 0.2s, box-shadow 0.2s; }
     .hover-lift:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+    
+    /* Leaflet dark theme overrides */
+    .leaflet-container { background: ${COLORS.bg} !important; border-radius: 12px; }
+    .leaflet-control-zoom { border: 1px solid ${COLORS.border} !important; border-radius: 8px !important; overflow: hidden; }
+    .leaflet-control-zoom a { background: ${COLORS.surface} !important; color: ${COLORS.text} !important; border-color: ${COLORS.border} !important; width: 32px !important; height: 32px !important; line-height: 32px !important; font-size: 16px !important; }
+    .leaflet-control-zoom a:hover { background: ${COLORS.surfaceHover} !important; }
+    .leaflet-control-attribution { background: ${COLORS.bg}CC !important; color: ${COLORS.textMuted} !important; font-size: 9px !important; font-family: ${FONTS.mono} !important; border-radius: 4px 0 0 0 !important; }
+    .leaflet-control-attribution a { color: ${COLORS.textMuted} !important; }
+    .leaflet-popup-content-wrapper { background: ${COLORS.card} !important; color: ${COLORS.text} !important; border-radius: 10px !important; border: 1px solid ${COLORS.border} !important; box-shadow: 0 8px 32px rgba(0,0,0,0.5) !important; }
+    .leaflet-popup-tip { background: ${COLORS.card} !important; border: 1px solid ${COLORS.border} !important; }
+    .leaflet-popup-close-button { color: ${COLORS.textMuted} !important; font-size: 18px !important; }
+    .leaflet-popup-close-button:hover { color: ${COLORS.text} !important; }
   `}</style>
 );
 
@@ -903,72 +917,172 @@ const InventoryView = () => {
   );
 };
 
+// ─── CUSTOM MAP MARKERS ─────────────────────────────────
+const createVehicleIcon = (status) => {
+  const colors = { "on-site": COLORS.success, "in-transit": COLORS.info, idle: COLORS.warning, maintenance: COLORS.danger };
+  const color = colors[status] || COLORS.textMuted;
+  return L.divIcon({
+    className: "",
+    iconSize: [32, 32],
+    iconAnchor: [16, 16],
+    popupAnchor: [0, -18],
+    html: `<div style="
+      width:32px;height:32px;border-radius:50%;
+      background:${color}22;border:3px solid ${color};
+      display:flex;align-items:center;justify-content:center;
+      box-shadow:0 0 12px ${color}55, 0 2px 8px rgba(0,0,0,0.4);
+      position:relative;
+    ">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="${color}"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+      ${status === "in-transit" ? `<div style="position:absolute;width:100%;height:100%;border-radius:50%;border:2px solid ${color};animation:pulse 2s infinite;top:-2px;left:-2px;"></div>` : ""}
+    </div>`,
+  });
+};
+
+const createEmployeeIcon = (status) => {
+  const color = status === "active" ? COLORS.success : status === "break" ? COLORS.warning : COLORS.textMuted;
+  return L.divIcon({
+    className: "",
+    iconSize: [28, 28],
+    iconAnchor: [14, 14],
+    popupAnchor: [0, -16],
+    html: `<div style="
+      width:28px;height:28px;border-radius:50%;
+      background:${color}22;border:3px solid ${color};
+      display:flex;align-items:center;justify-content:center;
+      box-shadow:0 0 10px ${color}44, 0 2px 6px rgba(0,0,0,0.3);
+    ">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="${color}"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+    </div>`,
+  });
+};
+
+// Fit map bounds to markers
+const MapBoundsUpdater = ({ positions }) => {
+  const map = useMap();
+  useEffect(() => {
+    if (positions.length > 0) {
+      const bounds = L.latLngBounds(positions.map(p => [p.lat, p.lng]));
+      map.fitBounds(bounds, { padding: [50, 50], maxZoom: 12 });
+    }
+  }, [positions, map]);
+  return null;
+};
+
 // ─── FLEET & CREW TRACKING ──────────────────────────────
 const TrackingView = () => {
   const [tab, setTab] = useState("vehicles");
+  const [selectedItem, setSelectedItem] = useState(null);
+
+  const mapCenter = [39.95, -84.5]; // Midwest center
+  const positions = tab === "vehicles"
+    ? VEHICLES.map(v => ({ lat: v.lat, lng: v.lng }))
+    : EMPLOYEES.filter(e => e.crew !== "HQ").map((e, i) => {
+        const crew = VEHICLES.find(v => v.crew === e.crew);
+        return { lat: (crew?.lat || 39.77) + (i * 0.002), lng: (crew?.lng || -86.16) + (i * 0.002) };
+      });
 
   return (
     <div style={{ padding: 32, overflowY: "auto", height: "100vh" }}>
-      <SectionHeader title="Fleet & Crew Tracking" subtitle="Real-time vehicle and employee status" />
+      <SectionHeader title="Fleet & Crew Tracking" subtitle="Real-time vehicle and employee locations" />
 
       <div style={{ display: "flex", gap: 8, marginBottom: 24 }}>
-        <Button variant={tab === "vehicles" ? "primary" : "secondary"} size="sm" icon="truck" onClick={() => setTab("vehicles")}>Vehicles</Button>
-        <Button variant={tab === "employees" ? "primary" : "secondary"} size="sm" icon="people" onClick={() => setTab("employees")}>Employees</Button>
+        <Button variant={tab === "vehicles" ? "primary" : "secondary"} size="sm" icon="truck" onClick={() => { setTab("vehicles"); setSelectedItem(null); }}>Vehicles ({VEHICLES.length})</Button>
+        <Button variant={tab === "employees" ? "primary" : "secondary"} size="sm" icon="people" onClick={() => { setTab("employees"); setSelectedItem(null); }}>Employees ({EMPLOYEES.length})</Button>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 400px", gap: 20 }}>
-        <Card style={{ padding: 0, overflow: "hidden", minHeight: 500 }}>
-          <div style={{
-            width: "100%", height: "100%", minHeight: 500,
-            background: `radial-gradient(circle at 30% 40%, ${COLORS.asphalt}, ${COLORS.bg})`,
-            position: "relative", display: "flex", alignItems: "center", justifyContent: "center",
-          }}>
-            <div style={{ textAlign: "center", color: COLORS.textMuted }}>
-              <div style={{
-                width: "90%", height: 400, margin: "0 auto", position: "relative",
-                background: `linear-gradient(180deg, transparent 0%, ${COLORS.surface}15 100%)`,
-                borderRadius: 12, border: `1px solid ${COLORS.border}`,
-              }}>
-                <div style={{ position: "absolute", top: 16, left: 16, fontSize: 10, fontFamily: FONTS.mono, color: COLORS.textMuted, letterSpacing: 1 }}>MIDWEST REGION — LIVE MAP</div>
-                {(tab === "vehicles" ? VEHICLES : []).map((v, i) => {
-                  const x = 15 + ((v.lng + 87) / 6) * 70;
-                  const y = 15 + ((42 - v.lat) / 4) * 70;
-                  const statusColor = v.status === "on-site" ? COLORS.success : v.status === "in-transit" ? COLORS.info : v.status === "idle" ? COLORS.warning : COLORS.danger;
-                  return (
-                    <div key={v.id} style={{
-                      position: "absolute", left: `${Math.max(5, Math.min(85, x))}%`, top: `${Math.max(10, Math.min(85, y))}%`,
-                      transform: "translate(-50%, -50%)", zIndex: 10,
-                    }}>
-                      <div style={{
-                        width: 12, height: 12, borderRadius: "50%", background: statusColor,
-                        border: `2px solid ${COLORS.bg}`, boxShadow: `0 0 8px ${statusColor}66`,
-                        animation: v.status === "in-transit" ? "pulse 2s infinite" : "none",
-                      }} />
-                      <div style={{
-                        position: "absolute", top: 16, left: "50%", transform: "translateX(-50%)",
-                        fontSize: 9, fontFamily: FONTS.mono, color: COLORS.textSecondary,
-                        whiteSpace: "nowrap", background: `${COLORS.bg}DD`, padding: "2px 6px", borderRadius: 4,
-                      }}>{v.id}</div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 380px", gap: 20 }}>
+        <Card style={{ padding: 0, overflow: "hidden", minHeight: 560, borderRadius: 12 }}>
+          <MapContainer
+            center={mapCenter}
+            zoom={7}
+            style={{ width: "100%", height: 560, borderRadius: 12 }}
+            zoomControl={false}
+          >
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> | &copy; <a href="https://carto.com/">CARTO</a>'
+              url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+            />
+            <MapBoundsUpdater positions={positions} />
+
+            {tab === "vehicles" && VEHICLES.map(v => (
+              <Marker
+                key={v.id}
+                position={[v.lat, v.lng]}
+                icon={createVehicleIcon(v.status)}
+                eventHandlers={{ click: () => setSelectedItem(v) }}
+              >
+                <Popup>
+                  <div style={{ fontFamily: FONTS.body, minWidth: 180 }}>
+                    <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 4 }}>{v.id} — {v.name}</div>
+                    <div style={{ fontSize: 12, color: "#666", marginBottom: 2 }}>{v.type} • {v.crew} Crew</div>
+                    <div style={{ fontSize: 12, display: "flex", gap: 12, marginTop: 6 }}>
+                      <span>⛽ {v.fuel}%</span>
+                      {v.speed > 0 && <span>🏎️ {v.speed} mph</span>}
+                      <span style={{ fontWeight: 600, textTransform: "capitalize" }}>{v.status}</span>
                     </div>
-                  );
-                })}
-                <div style={{ position: "absolute", bottom: 16, left: 16, display: "flex", gap: 12, fontSize: 9, fontFamily: FONTS.mono }}>
-                  {[{ s: "on-site", c: COLORS.success }, { s: "in-transit", c: COLORS.info }, { s: "idle", c: COLORS.warning }, { s: "maintenance", c: COLORS.danger }].map(x => (
-                    <span key={x.s} style={{ display: "flex", alignItems: "center", gap: 4, color: COLORS.textMuted }}>
-                      <span style={{ width: 6, height: 6, borderRadius: "50%", background: x.c }} /> {x.s}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
+                  </div>
+                </Popup>
+              </Marker>
+            ))}
+
+            {tab === "employees" && EMPLOYEES.filter(e => e.crew !== "HQ").map((emp, i) => {
+              const crew = VEHICLES.find(v => v.crew === emp.crew);
+              const lat = (crew?.lat || 39.77) + (i * 0.002);
+              const lng = (crew?.lng || -86.16) + (i * 0.002);
+              return (
+                <Marker
+                  key={emp.id}
+                  position={[lat, lng]}
+                  icon={createEmployeeIcon(emp.status)}
+                  eventHandlers={{ click: () => setSelectedItem(emp) }}
+                >
+                  <Popup>
+                    <div style={{ fontFamily: FONTS.body, minWidth: 160 }}>
+                      <div style={{ fontWeight: 700, fontSize: 14 }}>{emp.name}</div>
+                      <div style={{ fontSize: 12, color: "#666" }}>{emp.role} • {emp.crew} Crew</div>
+                      <div style={{ fontSize: 12, marginTop: 4, textTransform: "capitalize" }}>Status: {emp.status}</div>
+                    </div>
+                  </Popup>
+                </Marker>
+              );
+            })}
+          </MapContainer>
+
+          {/* Map legend overlay */}
+          <div style={{
+            position: "relative", bottom: 52, left: 12, zIndex: 1000,
+            display: "inline-flex", gap: 14, padding: "8px 14px",
+            background: `${COLORS.bg}EE`, borderRadius: 8, border: `1px solid ${COLORS.border}`,
+            fontSize: 10, fontFamily: FONTS.mono, width: "fit-content", marginLeft: 12,
+            backdropFilter: "blur(8px)",
+          }}>
+            {[
+              { s: "on-site", c: COLORS.success },
+              { s: "in-transit", c: COLORS.info },
+              { s: "idle", c: COLORS.warning },
+              { s: "maintenance", c: COLORS.danger },
+            ].map(x => (
+              <span key={x.s} style={{ display: "flex", alignItems: "center", gap: 5, color: COLORS.textSecondary }}>
+                <span style={{ width: 8, height: 8, borderRadius: "50%", background: x.c, boxShadow: `0 0 6px ${x.c}66` }} />
+                {x.s}
+              </span>
+            ))}
           </div>
         </Card>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, maxHeight: 560, overflowY: "auto" }}>
           {tab === "vehicles" ? VEHICLES.map((v, i) => {
             const statusColor = v.status === "on-site" ? COLORS.success : v.status === "in-transit" ? COLORS.info : v.status === "idle" ? COLORS.warning : COLORS.danger;
+            const isSelected = selectedItem?.id === v.id;
             return (
-              <Card key={v.id} className="fade-in" style={{ padding: 14, animationDelay: `${i * 0.05}s` }}>
+              <Card key={v.id} className="fade-in" onClick={() => setSelectedItem(v)}
+                style={{
+                  padding: 14, animationDelay: `${i * 0.04}s`, cursor: "pointer",
+                  border: `1px solid ${isSelected ? statusColor : COLORS.border}`,
+                  background: isSelected ? `${statusColor}08` : COLORS.card,
+                  transition: "all 0.2s",
+                }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <div style={{ padding: 6, borderRadius: 6, background: `${statusColor}15` }}>
@@ -982,30 +1096,48 @@ const TrackingView = () => {
                   <Badge color={statusColor} small>{v.status}</Badge>
                 </div>
                 <div style={{ display: "flex", gap: 16, fontSize: 11 }}>
-                  <span style={{ color: COLORS.textMuted }}>
+                  <span style={{ display: "flex", alignItems: "center", gap: 4, color: v.fuel < 50 ? COLORS.danger : COLORS.textMuted }}>
                     <Icon name="fuel" size={12} color={v.fuel < 50 ? COLORS.danger : COLORS.textMuted} /> {v.fuel}% fuel
                   </span>
-                  {v.speed > 0 && <span style={{ color: COLORS.textMuted }}>{v.speed} mph</span>}
+                  {v.speed > 0 && <span style={{ color: COLORS.info }}>⏱ {v.speed} mph</span>}
+                  <span style={{ color: COLORS.textMuted, fontFamily: FONTS.mono, fontSize: 10 }}>
+                    {v.lat.toFixed(3)}, {v.lng.toFixed(3)}
+                  </span>
+                </div>
+                {v.fuel < 50 && (
+                  <div style={{ marginTop: 8 }}>
+                    <ProgressBar value={v.fuel} height={4} color={v.fuel < 30 ? COLORS.danger : COLORS.warning} />
+                  </div>
+                )}
+              </Card>
+            );
+          }) : EMPLOYEES.map((emp, i) => {
+            const isSelected = selectedItem?.id === emp.id;
+            const statusColor = emp.status === "active" ? COLORS.success : emp.status === "break" ? COLORS.warning : COLORS.textMuted;
+            return (
+              <Card key={emp.id} className="fade-in" onClick={() => setSelectedItem(emp)}
+                style={{
+                  padding: 14, animationDelay: `${i * 0.04}s`, cursor: "pointer",
+                  border: `1px solid ${isSelected ? statusColor : COLORS.border}`,
+                  background: isSelected ? `${statusColor}08` : COLORS.card,
+                  transition: "all 0.2s",
+                }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <Avatar initials={emp.avatar} size={36} color={statusColor} />
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: 13 }}>{emp.name}</div>
+                      <div style={{ fontSize: 11, color: COLORS.textMuted }}>{emp.role} • {emp.crew} Crew</div>
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <StatusDot status={emp.status} />
+                    <span style={{ fontSize: 11, color: COLORS.textMuted, textTransform: "capitalize" }}>{emp.status}</span>
+                  </div>
                 </div>
               </Card>
             );
-          }) : EMPLOYEES.map((emp, i) => (
-            <Card key={emp.id} className="fade-in" style={{ padding: 14, animationDelay: `${i * 0.05}s` }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <Avatar initials={emp.avatar} size={36} color={emp.status === "active" ? COLORS.success : COLORS.warning} />
-                  <div>
-                    <div style={{ fontWeight: 700, fontSize: 13 }}>{emp.name}</div>
-                    <div style={{ fontSize: 11, color: COLORS.textMuted }}>{emp.role} • {emp.crew}</div>
-                  </div>
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <StatusDot status={emp.status} />
-                  <span style={{ fontSize: 11, color: COLORS.textMuted, textTransform: "capitalize" }}>{emp.status}</span>
-                </div>
-              </div>
-            </Card>
-          ))}
+          })}
         </div>
       </div>
     </div>

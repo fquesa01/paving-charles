@@ -1,6 +1,19 @@
 import { useState, useEffect, useCallback, useRef, useMemo, createContext, useContext } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
 import L from "leaflet";
+
+// Fix Leaflet default marker icons
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png",
+  iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png",
+  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
+});
+
+// ─── THEME CONTEXT ────────────────────────────────────
+const ThemeContext = createContext({ isDark: true, toggle: () => {} });
+const useTheme = () => useContext(ThemeContext);
 
 // ─── MOBILE DETECTION ──────────────────────────────────
 const useIsMobile = (breakpoint = 768) => {
@@ -12,10 +25,6 @@ const useIsMobile = (breakpoint = 768) => {
   }, [breakpoint]);
   return isMobile;
 };
-
-// ─── THEME CONTEXT ────────────────────────────────────
-const ThemeContext = createContext({ isDark: true, toggle: () => {} });
-const useTheme = () => useContext(ThemeContext);
 
 const COLORS = {
   bg: "var(--c-bg)",
@@ -202,6 +211,108 @@ const LEADS = [
     amount: "Est. $65,000", date: "2026-02-25", location: "Indianapolis, IN", status: "new",
     relevance: 91, tags: ["Commercial", "Parking Lot", "Repaving"],
   },
+];
+
+
+// ─── CLOSED PROJECTS ARCHIVE ─────────────────────────────
+const CLOSED_PROJECTS = [
+  {
+    id: "P-0998", name: "Cedar Lane Cul-de-sac Overlay", client: "City of Carmel", type: "Municipal",
+    status: "completed", crew: "Alpha", location: "Cedar Ln, Carmel, IN",
+    startDate: "2025-11-10", endDate: "2025-12-02", budget: 32000, spent: 29800, progress: 100,
+    rating: 5, invoicePaid: true,
+    checklist: [
+      { id: 1, text: "Permits & traffic plan", done: true, completedBy: "Sarah Chen", date: "Nov 8" },
+      { id: 2, text: "Mill existing surface", done: true, completedBy: "Marcus Rivera", date: "Nov 12" },
+      { id: 3, text: "Pave overlay", done: true, completedBy: "Jake Thompson", date: "Nov 22" },
+      { id: 4, text: "Final inspection", done: true, completedBy: "Sarah Chen", date: "Dec 2" },
+    ],
+    timeline: [
+      { date: "Nov 10", event: "Project started", user: "Marcus Rivera", type: "milestone" },
+      { date: "Dec 2", event: "Completed. City inspector passed all zones.", user: "Sarah Chen", type: "milestone" },
+    ],
+  },
+  {
+    id: "P-0995", name: "Greenfield Industrial Park Lot B", client: "Greenfield Commerce LLC", type: "Commercial",
+    status: "completed", crew: "Bravo", location: "1400 Commerce Dr, Greenfield, IN",
+    startDate: "2025-10-01", endDate: "2025-10-28", budget: 45000, spent: 41200, progress: 100,
+    rating: 4, invoicePaid: true,
+    checklist: [
+      { id: 1, text: "Site prep & grading", done: true, completedBy: "Carlos Mendez", date: "Oct 2" },
+      { id: 2, text: "Sub-base installation", done: true, completedBy: "Tommy O\'Brien", date: "Oct 8" },
+      { id: 3, text: "Pave 2-course asphalt", done: true, completedBy: "Carlos Mendez", date: "Oct 18" },
+      { id: 4, text: "Sealcoat & stripe", done: true, completedBy: "Tommy O\'Brien", date: "Oct 25" },
+      { id: 5, text: "ADA compliance & final", done: true, completedBy: "Sarah Chen", date: "Oct 28" },
+    ],
+    timeline: [],
+  },
+  {
+    id: "P-0991", name: "Fishers Town Center Walkways", client: "Town of Fishers", type: "Municipal",
+    status: "completed", crew: "Alpha", location: "Fishers Town Center, Fishers, IN",
+    startDate: "2025-08-15", endDate: "2025-09-12", budget: 22000, spent: 20100, progress: 100,
+    rating: 5, invoicePaid: true,
+    checklist: [], timeline: [],
+  },
+  {
+    id: "P-0987", name: "Westfield Residential Subdivision", client: "Westfield Homes HOA", type: "Residential",
+    status: "completed", crew: "Bravo", location: "Westfield Homes, Westfield, IN",
+    startDate: "2025-07-01", endDate: "2025-08-05", budget: 58000, spent: 54300, progress: 100,
+    rating: 4, invoicePaid: false,
+    checklist: [], timeline: [],
+  },
+  {
+    id: "P-0980", name: "Anderson Elementary School Lot", client: "Anderson CSD", type: "Municipal",
+    status: "completed", crew: "Alpha", location: "200 School Ave, Anderson, IN",
+    startDate: "2025-06-10", endDate: "2025-06-28", budget: 19500, spent: 18200, progress: 100,
+    rating: 5, invoicePaid: true,
+    checklist: [], timeline: [],
+  },
+];
+
+// ─── ESTIMATES & INVOICES ────────────────────────────────
+const ESTIMATES = [
+  { id: "EST-2040", project: "Elm Street Residential Driveway", client: "Johnson Family", date: "2026-02-15", amount: 8500, status: "accepted", items: [
+    { desc: "Remove existing driveway (480 sqft)", qty: 1, rate: 1200 },
+    { desc: "Grade & compact sub-base", qty: 1, rate: 1500 },
+    { desc: "HMA base course 2\" (12 tons)", qty: 12, rate: 210 },
+    { desc: "HMA surface course 1.5\" (8 tons)", qty: 8, rate: 230 },
+    { desc: "Edge forming & finishing", qty: 1, rate: 800 },
+    { desc: "Cleanup & disposal", qty: 1, rate: 480 },
+  ]},
+  { id: "EST-2039", project: "Oak Park Business Lot Repair", client: "Oak Park Shopping Center", date: "2026-02-10", amount: 24000, status: "accepted", items: [
+    { desc: "Lot assessment & damage mapping", qty: 1, rate: 1200 },
+    { desc: "Saw-cut & remove damaged sections (14 zones)", qty: 14, rate: 420 },
+    { desc: "Sub-base repair & leveling", qty: 1, rate: 3800 },
+    { desc: "Pave patched areas (28 tons HMA)", qty: 28, rate: 210 },
+    { desc: "Full lot sealcoat (22,000 sqft)", qty: 22, rate: 145 },
+    { desc: "Parking line re-striping", qty: 1, rate: 2200 },
+    { desc: "ADA compliance upgrades", qty: 1, rate: 1850 },
+  ]},
+  { id: "EST-2038", project: "Maple Housing Complex Paths", client: "Maple Grove HOA", date: "2026-02-05", amount: 15000, status: "pending", items: [
+    { desc: "Walkway removal & prep (1,200 sqft)", qty: 1, rate: 2800 },
+    { desc: "New asphalt walkways", qty: 1, rate: 8200 },
+    { desc: "Curbing & edging", qty: 1, rate: 2400 },
+    { desc: "Cleanup", qty: 1, rate: 1600 },
+  ]},
+  { id: "EST-2035", project: "Broad Ripple Parking Lot", client: "Broad Ripple Bar Assoc.", date: "2026-01-20", amount: 35000, status: "declined", items: [
+    { desc: "Full lot tear-out & repave", qty: 1, rate: 28000 },
+    { desc: "Drainage improvements", qty: 1, rate: 4500 },
+    { desc: "Striping & signage", qty: 1, rate: 2500 },
+  ]},
+];
+
+const INVOICES = [
+  { id: "INV-3001", estimateId: "EST-2040", project: "Elm Street Residential Driveway", client: "Johnson Family", amount: 4200, total: 8500, status: "partial", dueDate: "2026-03-15", paidDate: null },
+  { id: "INV-3000", estimateId: "EST-2039", project: "Oak Park Business Lot Repair", client: "Oak Park Shopping Center", amount: 24000, total: 24000, status: "sent", dueDate: "2026-03-20", paidDate: null },
+  { id: "INV-2998", project: "Cedar Lane Cul-de-sac Overlay", client: "City of Carmel", amount: 29800, total: 29800, status: "paid", dueDate: "2025-12-30", paidDate: "2025-12-22" },
+  { id: "INV-2995", project: "Greenfield Industrial Park Lot B", client: "Greenfield Commerce LLC", amount: 41200, total: 41200, status: "paid", dueDate: "2025-11-15", paidDate: "2025-11-12" },
+];
+
+// ─── APP PHONE NUMBERS ───────────────────────────────────
+const APP_PHONE_LINES = [
+  { id: "PH-001", number: "+1 (317) 555-0199", label: "Main Office Line", assignedTo: "All Projects", platform: "Twilio", active: true },
+  { id: "PH-002", number: "+1 (317) 555-0201", label: "Elm Street Project", assignedTo: "P-1001", platform: "Twilio", active: true },
+  { id: "PH-003", number: "+1 (614) 555-0188", label: "Oak Park Project", assignedTo: "P-1002", platform: "Twilio", active: true },
 ];
 
 // ─── BOND & LEAD DATA SOURCES ──────────────────────────
@@ -485,6 +596,14 @@ const Icon = ({ name, size = 20, color = "currentColor" }) => {
     link: <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z" />,
     timeline: <path d="M23 8c0 1.1-.9 2-2 2-.18 0-.35-.02-.51-.07l-3.56 3.55c.05.16.07.34.07.52 0 1.1-.9 2-2 2s-2-.9-2-2c0-.18.02-.36.07-.52l-2.55-2.55c-.16.05-.34.07-.52.07s-.36-.02-.52-.07l-4.55 4.56c.05.16.07.33.07.51 0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2c.18 0 .35.02.51.07l4.56-4.55C8.02 9.36 8 9.18 8 9c0-1.1.9-2 2-2s2 .9 2 2c0 .18-.02.36-.07.52l2.55 2.55c.16-.05.34-.07.52-.07s.36.02.52.07l3.55-3.56C19.02 8.35 19 8.18 19 8c0-1.1.9-2 2-2s2 .9 2 2z" />,
     notification: <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" />,
+    home: <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />,
+    mic: <path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z" />,
+    phone: <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />,
+    mapview: <path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z" />,
+    dollar: <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z" />,
+    target: <path d="M12 2C6.49 2 2 6.49 2 12s4.49 10 10 10 10-4.49 10-10S17.51 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm3-8c0 1.66-1.34 3-3 3s-3-1.34-3-3 1.34-3 3-3 3 1.34 3 3z" />,
+    pdf: <path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm10 5.5h1v-3h-1v3z" />,
+    stripe: <path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445 1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921-6.99-2.109l-.9 5.555C5.175 22.99 8.385 24 11.714 24c2.641 0 4.843-.624 6.328-1.813 1.664-1.305 2.525-3.236 2.525-5.732 0-4.128-2.524-5.851-6.591-7.305z" />,
     fuel: <path d="M19.77 7.23l.01-.01-3.72-3.72L15 4.56l2.11 2.11c-.94.36-1.61 1.26-1.61 2.33 0 1.38 1.12 2.5 2.5 2.5.36 0 .69-.08 1-.21v7.21c0 .55-.45 1-1 1s-1-.45-1-1V14c0-1.1-.9-2-2-2h-1V5c0-1.1-.9-2-2-2H6c-1.1 0-2 .9-2 2v16h10v-7.5h1.5v5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V9c0-.69-.28-1.32-.73-1.77zM12 10H6V5h6v5z" />,
   };
   return (
@@ -543,6 +662,7 @@ const GlobalStyles = () => (
     @keyframes slideIn { from { opacity: 0; transform: translateX(-12px); } to { opacity: 1; transform: translateX(0); } }
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
     @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+    @keyframes slideInLeft { from { transform: translateX(-100%); } to { transform: translateX(0); } }
     
     .fade-in { animation: fadeIn 0.4s ease-out forwards; }
     .slide-in { animation: slideIn 0.3s ease-out forwards; }
@@ -556,61 +676,6 @@ const GlobalStyles = () => (
     /* Theme transition on key elements */
     [data-theme] * {
       transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
-    }
-
-    /* ─── MOBILE RESPONSIVE ─────────────────────── */
-    .mobile-header { display: none; }
-    .sidebar-overlay { display: none; }
-
-    @media (max-width: 768px) {
-      .mobile-header {
-        display: flex; align-items: center; gap: 12px;
-        padding: 12px 16px; background: var(--c-surface);
-        border-bottom: 1px solid var(--c-border);
-        position: sticky; top: 0; z-index: 50;
-      }
-      .mobile-header button {
-        background: none; border: none; color: var(--c-text);
-        cursor: pointer; padding: 6px; border-radius: 6px;
-        display: flex; align-items: center; justify-content: center;
-      }
-      .sidebar-desktop { 
-        position: fixed; left: 0; top: 0; z-index: 100;
-        transform: translateX(-100%);
-        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        width: 260px !important;
-      }
-      .sidebar-desktop.sidebar-open { transform: translateX(0); }
-      .sidebar-overlay {
-        display: block; position: fixed; inset: 0; z-index: 99;
-        background: var(--c-overlay); opacity: 0;
-        transition: opacity 0.3s; pointer-events: none;
-      }
-      .sidebar-overlay.sidebar-open { opacity: 1; pointer-events: auto; }
-      
-      .view-container { padding: 16px !important; }
-      .section-header h1 { font-size: 24px !important; }
-      
-      .grid-4 { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
-      .grid-3 { grid-template-columns: 1fr !important; gap: 10px !important; }
-      .grid-2 { grid-template-columns: 1fr !important; gap: 10px !important; }
-      .grid-2-keep { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
-      .grid-sidebar { grid-template-columns: 1fr !important; gap: 12px !important; }
-      
-      .map-grid { grid-template-columns: 1fr !important; }
-      .map-sidebar-cards { max-height: 300px !important; }
-      
-      .lead-grid { grid-template-columns: 1fr !important; }
-      .source-grid { grid-template-columns: repeat(2, 1fr) !important; }
-      .integ-grid { grid-template-columns: 1fr !important; }
-      .api-grid { grid-template-columns: 1fr !important; }
-      .steps-grid { grid-template-columns: 1fr !important; }
-    }
-    
-    @media (max-width: 480px) {
-      .grid-4 { grid-template-columns: 1fr !important; }
-      .source-grid { grid-template-columns: 1fr !important; }
-      .grid-2-keep { grid-template-columns: 1fr !important; }
     }
   `}</style>
 );
@@ -716,9 +781,11 @@ const ThemeToggle = ({ compact }) => {
 // ─── SIDEBAR ─────────────────────────────────────────────
 const Sidebar = ({ activeTab, setActiveTab, collapsed, setCollapsed }) => {
   const navItems = [
-    { id: "dashboard", icon: "dashboard", label: "Dashboard" },
+    { id: "home", icon: "home", label: "Home" },
     { id: "messages", icon: "messages", label: "Comms Portal", badge: 3 },
     { id: "projects", icon: "projects", label: "Projects" },
+    { id: "projectmap", icon: "mapview", label: "Project Map" },
+    { id: "estimates", icon: "dollar", label: "Estimates & Billing" },
     { id: "inventory", icon: "inventory", label: "Inventory" },
     { id: "tracking", icon: "tracking", label: "Fleet & Crew" },
     { id: "leads", icon: "leads", label: "Lead Intel" },
@@ -822,6 +889,183 @@ const Sidebar = ({ activeTab, setActiveTab, collapsed, setCollapsed }) => {
   );
 };
 
+
+// ─── HOME VIEW (AI Landing Page) ─────────────────────────
+const HomeView = ({ setActiveTab, setSelectedProject, isMobile }) => {
+  const [query, setQuery] = useState("");
+  const [listening, setListening] = useState(false);
+  const [showResult, setShowResult] = useState(null);
+  const recognitionRef = useRef(null);
+
+  const quickActions = [
+    { icon: "messages", label: "Text a team member", desc: "Send a quick message to any crew", action: () => setActiveTab("messages") },
+    { icon: "projects", label: "View active projects", desc: "Check progress on current jobs", action: () => setActiveTab("projects") },
+    { icon: "dollar", label: "Create an estimate", desc: "Build a new estimate from templates", action: () => setActiveTab("estimates") },
+    { icon: "mapview", label: "Open project map", desc: "See all projects on a map", action: () => setActiveTab("projectmap") },
+    { icon: "people", label: "Check crew status", desc: "See who\'s on site & available", action: () => setActiveTab("tracking") },
+    { icon: "leads", label: "Review new leads", desc: "4 new opportunities this week", action: () => setActiveTab("leads") },
+  ];
+
+  const parseCommand = (text) => {
+    const t = text.toLowerCase();
+    if (t.includes("text") || t.includes("message") || t.includes("send")) {
+      setActiveTab("messages"); return;
+    }
+    if (t.includes("project") && (t.includes("active") || t.includes("open") || t.includes("current"))) {
+      setActiveTab("projects"); return;
+    }
+    if (t.includes("map")) { setActiveTab("projectmap"); return; }
+    if (t.includes("estimate") || t.includes("quote") || t.includes("bid") || t.includes("bill") || t.includes("invoice")) {
+      setActiveTab("estimates"); return;
+    }
+    if (t.includes("crew") || t.includes("fleet") || t.includes("truck") || t.includes("who")) {
+      setActiveTab("tracking"); return;
+    }
+    if (t.includes("lead") || t.includes("opportunity") || t.includes("bond")) {
+      setActiveTab("leads"); return;
+    }
+    if (t.includes("inventory") || t.includes("material") || t.includes("asphalt") || t.includes("supply")) {
+      setActiveTab("inventory"); return;
+    }
+    if (t.includes("email") || t.includes("calendar") || t.includes("integration") || t.includes("phone number")) {
+      setActiveTab("integrations"); return;
+    }
+    setShowResult(`I heard: "${text}". Try saying something like "text Marcus" or "open active projects".`);
+  };
+
+  const handleSubmit = () => {
+    if (!query.trim()) return;
+    parseCommand(query);
+    setQuery("");
+  };
+
+  const startListening = () => {
+    if (!("webkitSpeechRecognition" in window) && !("SpeechRecognition" in window)) {
+      setShowResult("Voice recognition is not supported in this browser. Try Chrome or Safari.");
+      return;
+    }
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = "en-US";
+    recognition.onstart = () => setListening(true);
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      setQuery(transcript);
+      parseCommand(transcript);
+    };
+    recognition.onerror = () => setListening(false);
+    recognition.onend = () => setListening(false);
+    recognitionRef.current = recognition;
+    recognition.start();
+  };
+
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "100vh", padding: isMobile ? 20 : 40, overflowY: "auto" }}>
+      <div style={{ width: "100%", maxWidth: 680, textAlign: "center" }}>
+        {/* Logo & Greeting */}
+        <div style={{
+          width: 56, height: 56, borderRadius: 16, margin: "0 auto 20px",
+          background: `linear-gradient(135deg, ${COLORS.accent}, ${COLORS.accentDark})`,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontFamily: FONTS.display, fontWeight: 800, fontSize: 24, color: "#000",
+        }}>P</div>
+        <h1 style={{ fontFamily: FONTS.display, fontSize: isMobile ? 28 : 36, fontWeight: 700, marginBottom: 8, letterSpacing: 1 }}>
+          {greeting}, Sarah
+        </h1>
+        <p style={{ color: COLORS.textMuted, fontSize: 15, marginBottom: 32 }}>
+          What can I help you with today?
+        </p>
+
+        {/* Prompt Box */}
+        <div style={{
+          display: "flex", alignItems: "center", gap: 8,
+          padding: "12px 16px", borderRadius: 16, border: `1px solid ${COLORS.border}`,
+          background: COLORS.surface, marginBottom: 12,
+          boxShadow: "0 4px 24px var(--c-shadow)",
+        }}>
+          <input
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && handleSubmit()}
+            placeholder={isMobile ? "Ask Jane anything..." : "Ask Jane to navigate, text a crew member, create an estimate..."}
+            style={{
+              flex: 1, background: "transparent", border: "none", outline: "none",
+              color: COLORS.text, fontSize: 15, fontFamily: FONTS.body,
+            }}
+          />
+          <button onClick={startListening} style={{
+            background: listening ? `${COLORS.danger}20` : `${COLORS.accent}15`,
+            border: `1px solid ${listening ? COLORS.danger : COLORS.accent}40`,
+            borderRadius: 10, padding: 8, cursor: "pointer", display: "flex",
+            alignItems: "center", justifyContent: "center",
+            animation: listening ? "pulse 1.5s infinite" : "none",
+          }}>
+            <Icon name="mic" size={20} color={listening ? COLORS.danger : COLORS.accent} />
+          </button>
+          <button onClick={handleSubmit} style={{
+            background: COLORS.accent, border: "none", borderRadius: 10,
+            padding: 8, cursor: "pointer", display: "flex",
+          }}>
+            <Icon name="send" size={20} color="#000" />
+          </button>
+        </div>
+
+        <p style={{ fontSize: 12, color: COLORS.textMuted, marginBottom: 40 }}>
+          Say <strong style={{ color: COLORS.accent }}>"Hey Jane"</strong> or tap the mic to use voice commands
+        </p>
+
+        {showResult && (
+          <div style={{
+            padding: 16, borderRadius: 12, background: `${COLORS.info}10`,
+            border: `1px solid ${COLORS.info}30`, marginBottom: 24,
+            fontSize: 14, color: COLORS.info, textAlign: "left",
+          }}>
+            {showResult}
+            <button onClick={() => setShowResult(null)} style={{
+              float: "right", background: "none", border: "none",
+              color: COLORS.info, cursor: "pointer", fontSize: 18,
+            }}>×</button>
+          </div>
+        )}
+
+        {/* Quick Actions */}
+        <div style={{ textAlign: "left", marginBottom: 16 }}>
+          <span style={{ fontSize: 11, fontFamily: FONTS.mono, color: COLORS.textMuted, letterSpacing: 1, textTransform: "uppercase" }}>Quick Actions</span>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 10 }}>
+          {quickActions.map((a, i) => (
+            <button key={i} onClick={a.action} style={{
+              display: "flex", alignItems: "center", gap: 14, padding: 16,
+              background: COLORS.surface, border: `1px solid ${COLORS.border}`,
+              borderRadius: 12, cursor: "pointer", textAlign: "left",
+              transition: "all 0.2s", width: "100%",
+            }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = COLORS.accent; e.currentTarget.style.background = COLORS.surfaceHover; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = COLORS.border; e.currentTarget.style.background = COLORS.surface; }}
+            >
+              <div style={{
+                width: 40, height: 40, borderRadius: 10, background: `${COLORS.accent}12`,
+                display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+              }}>
+                <Icon name={a.icon} size={20} color={COLORS.accent} />
+              </div>
+              <div>
+                <div style={{ fontFamily: FONTS.display, fontSize: 14, fontWeight: 600, color: COLORS.text, marginBottom: 2 }}>{a.label}</div>
+                <div style={{ fontSize: 12, color: COLORS.textMuted }}>{a.desc}</div>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // ─── DASHBOARD ──────────────────────────────────────────
 const DashboardView = ({ setActiveTab, setSelectedProject, isMobile }) => {
   const stats = [
@@ -831,13 +1075,15 @@ const DashboardView = ({ setActiveTab, setSelectedProject, isMobile }) => {
     { label: "New Leads", value: "4", sub: "this week", icon: "leads", color: COLORS.warning },
   ];
 
+  const pad = isMobile ? 16 : 32;
+
   return (
-    <div style={{ padding: isMobile ? 16 : 32, overflowY: "auto", height: "100vh" }}>
-      <div style={{ marginBottom: 32 }}>
-        <h1 style={{ fontFamily: FONTS.display, fontSize: 32, fontWeight: 700, letterSpacing: "1px" }}>
+    <div style={{ padding: pad, overflowY: "auto", height: "100vh" }}>
+      <div style={{ marginBottom: 24 }}>
+        <h1 style={{ fontFamily: FONTS.display, fontSize: isMobile ? 24 : 32, fontWeight: 700, letterSpacing: "1px" }}>
           Good morning, Sarah
         </h1>
-        <p style={{ color: COLORS.textMuted, fontSize: 14, marginTop: 4 }}>
+        <p style={{ color: COLORS.textMuted, fontSize: isMobile ? 12 : 14, marginTop: 4 }}>
           Thursday, February 26, 2026 — Here's your operations overview
         </p>
       </div>
@@ -847,13 +1093,13 @@ const DashboardView = ({ setActiveTab, setSelectedProject, isMobile }) => {
           <Card key={i} className="hover-lift" style={{ animationDelay: `${i * 0.08}s` }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
               <div>
-                <div style={{ fontSize: 12, color: COLORS.textMuted, fontWeight: 500, marginBottom: 8, textTransform: "uppercase", letterSpacing: "1px", fontFamily: FONTS.mono }}>{s.label}</div>
-                <div style={{ fontSize: 36, fontWeight: 700, fontFamily: FONTS.display, color: s.color, lineHeight: 1 }}>{s.value}</div>
-                <div style={{ fontSize: 12, color: COLORS.textSecondary, marginTop: 4 }}>{s.sub}</div>
+                <div style={{ fontSize: isMobile ? 10 : 12, color: COLORS.textMuted, fontWeight: 500, marginBottom: 6, textTransform: "uppercase", letterSpacing: "1px", fontFamily: FONTS.mono }}>{s.label}</div>
+                <div style={{ fontSize: isMobile ? 28 : 36, fontWeight: 700, fontFamily: FONTS.display, color: s.color, lineHeight: 1 }}>{s.value}</div>
+                <div style={{ fontSize: isMobile ? 10 : 12, color: COLORS.textSecondary, marginTop: 4 }}>{s.sub}</div>
               </div>
-              <div style={{ padding: 10, borderRadius: 10, background: `${s.color}15` }}>
+              {!isMobile && <div style={{ padding: 10, borderRadius: 10, background: `${s.color}15` }}>
                 <Icon name={s.icon} size={22} color={s.color} />
-              </div>
+              </div>}
             </div>
           </Card>
         ))}
@@ -952,6 +1198,7 @@ const MessagesView = ({ isMobile }) => {
   const [activeChannel, setActiveChannel] = useState("alpha-crew");
   const [messages, setMessages] = useState(MESSAGES);
   const [newMessage, setNewMessage] = useState("");
+  const [showChannelList, setShowChannelList] = useState(!isMobile);
   const messagesEndRef = useRef(null);
 
   const channels = [
@@ -962,6 +1209,11 @@ const MessagesView = ({ isMobile }) => {
   ];
 
   const filteredMessages = messages.filter(m => m.channel === activeChannel);
+
+  const handleChannelSelect = (id) => {
+    setActiveChannel(id);
+    if (isMobile) setShowChannelList(false);
+  };
 
   const sendMessage = () => {
     if (!newMessage.trim()) return;
@@ -975,102 +1227,111 @@ const MessagesView = ({ isMobile }) => {
     setNewMessage("");
   };
 
-  return (
-    <div style={{ display: "flex", height: "100vh" }}>
-      <div style={{ width: 260, background: COLORS.surface, borderRight: `1px solid ${COLORS.border}`, display: "flex", flexDirection: "column" }}>
-        <div style={{ padding: "20px 16px", borderBottom: `1px solid ${COLORS.border}` }}>
-          <h2 style={{ fontFamily: FONTS.display, fontSize: 18, fontWeight: 600, letterSpacing: "0.5px" }}>Communications</h2>
-          <p style={{ fontSize: 11, color: COLORS.textMuted, marginTop: 2 }}>All messages are logged & reviewable</p>
-        </div>
-        <div style={{ padding: "12px 8px", flex: 1 }}>
-          <div style={{ fontSize: 10, color: COLORS.textMuted, fontFamily: FONTS.mono, letterSpacing: 1, padding: "8px 10px", textTransform: "uppercase" }}>Channels</div>
-          {channels.map(ch => (
-            <button key={ch.id} onClick={() => handleChannelSelect(ch.id)}
-              style={{
-                display: "flex", alignItems: "center", justifyContent: "space-between",
-                width: "100%", padding: "10px 12px", borderRadius: 8, border: "none", cursor: "pointer",
-                background: activeChannel === ch.id ? `${COLORS.accent}15` : "transparent",
-                color: activeChannel === ch.id ? COLORS.accent : COLORS.textSecondary,
-                fontFamily: FONTS.body, fontSize: 13, fontWeight: activeChannel === ch.id ? 600 : 400,
-                transition: "all 0.15s", textAlign: "left",
-              }}
-            >
-              <span># {ch.name}</span>
-              {ch.unread > 0 && (
-                <span style={{ background: COLORS.danger, color: "#fff", fontSize: 10, fontWeight: 700, padding: "1px 6px", borderRadius: 10 }}>{ch.unread}</span>
-              )}
-            </button>
-          ))}
-          <div style={{ fontSize: 10, color: COLORS.textMuted, fontFamily: FONTS.mono, letterSpacing: 1, padding: "16px 10px 8px", textTransform: "uppercase" }}>Direct Messages</div>
-          {EMPLOYEES.slice(0, 4).map(emp => (
-            <button key={emp.id} style={{
-              display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "8px 12px",
-              borderRadius: 8, border: "none", cursor: "pointer", background: "transparent",
-              color: COLORS.textSecondary, fontFamily: FONTS.body, fontSize: 13, textAlign: "left",
-            }}>
-              <StatusDot status={emp.status} />
-              <span>{emp.name}</span>
-            </button>
-          ))}
-        </div>
+  // On mobile: show either channel list OR message thread
+  const channelPanel = (
+    <div style={{ width: isMobile ? "100%" : 260, minWidth: isMobile ? 0 : 260, background: COLORS.surface, borderRight: isMobile ? "none" : `1px solid ${COLORS.border}`, display: "flex", flexDirection: "column", height: "100%" }}>
+      <div style={{ padding: "20px 16px", borderBottom: `1px solid ${COLORS.border}` }}>
+        <h2 style={{ fontFamily: FONTS.display, fontSize: 18, fontWeight: 600, letterSpacing: "0.5px" }}>Communications</h2>
+        <p style={{ fontSize: 11, color: COLORS.textMuted, marginTop: 2 }}>All messages are logged & reviewable</p>
       </div>
+      <div style={{ padding: "12px 8px", flex: 1, overflowY: "auto" }}>
+        <div style={{ fontSize: 10, color: COLORS.textMuted, fontFamily: FONTS.mono, letterSpacing: 1, padding: "8px 10px", textTransform: "uppercase" }}>Channels</div>
+        {channels.map(ch => (
+          <button key={ch.id} onClick={() => handleChannelSelect(ch.id)}
+            style={{
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+              width: "100%", padding: "10px 12px", borderRadius: 8, border: "none", cursor: "pointer",
+              background: activeChannel === ch.id ? `${COLORS.accent}15` : "transparent",
+              color: activeChannel === ch.id ? COLORS.accent : COLORS.textSecondary,
+              fontFamily: FONTS.body, fontSize: 13, fontWeight: activeChannel === ch.id ? 600 : 400,
+              transition: "all 0.15s", textAlign: "left",
+            }}
+          >
+            <span># {ch.name}</span>
+            {ch.unread > 0 && (
+              <span style={{ background: COLORS.danger, color: "#fff", fontSize: 10, fontWeight: 700, padding: "1px 6px", borderRadius: 10 }}>{ch.unread}</span>
+            )}
+          </button>
+        ))}
+        <div style={{ fontSize: 10, color: COLORS.textMuted, fontFamily: FONTS.mono, letterSpacing: 1, padding: "16px 10px 8px", textTransform: "uppercase" }}>Direct Messages</div>
+        {EMPLOYEES.slice(0, 4).map(emp => (
+          <button key={emp.id} style={{
+            display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "8px 12px",
+            borderRadius: 8, border: "none", cursor: "pointer", background: "transparent",
+            color: COLORS.textSecondary, fontFamily: FONTS.body, fontSize: 13, textAlign: "left",
+          }}>
+            <StatusDot status={emp.status} />
+            <span>{emp.name}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
 
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
-        <div style={{ padding: "16px 24px", borderBottom: `1px solid ${COLORS.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <button className="msg-back-btn" onClick={() => setMobileShowChannels(true)} style={{
+  const messagePanel = (
+    <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, height: "100%" }}>
+      <div style={{ padding: isMobile ? "12px 16px" : "16px 24px", borderBottom: `1px solid ${COLORS.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          {isMobile && (
+            <button onClick={() => setShowChannelList(true)} style={{
               background: "none", border: "none", cursor: "pointer", color: COLORS.textMuted,
-              padding: 4, alignItems: "center", justifyContent: "center",
+              padding: 4, display: "flex", alignItems: "center",
             }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
             </button>
-            <div>
-              <h3 style={{ fontFamily: FONTS.display, fontSize: 16, fontWeight: 600 }}>#{channels.find(c => c.id === activeChannel)?.name}</h3>
-              <span style={{ fontSize: 11, color: COLORS.textMuted }}>{channels.find(c => c.id === activeChannel)?.members} members</span>
-            </div>
-          </div>
-          <div style={{ display: "flex", gap: 8 }}>
-            <Badge color={COLORS.success} small>LOGGED</Badge>
-            <Badge color={COLORS.info} small>AUTO-SYNC</Badge>
+          )}
+          <div>
+            <h3 style={{ fontFamily: FONTS.display, fontSize: 16, fontWeight: 600 }}>#{channels.find(c => c.id === activeChannel)?.name}</h3>
+            <span style={{ fontSize: 11, color: COLORS.textMuted }}>{channels.find(c => c.id === activeChannel)?.members} members</span>
           </div>
         </div>
+        {!isMobile && <div style={{ display: "flex", gap: 8 }}>
+          <Badge color={COLORS.success} small>LOGGED</Badge>
+          <Badge color={COLORS.info} small>AUTO-SYNC</Badge>
+        </div>}
+      </div>
 
-        <div style={{ flex: 1, overflowY: "auto", padding: "16px 24px" }}>
-          <div style={{ padding: "12px 16px", background: `${COLORS.info}10`, borderRadius: 8, border: `1px solid ${COLORS.info}25`, marginBottom: 20, fontSize: 12, color: COLORS.info }}>
-            <strong>📋 Auto-Detection Active:</strong> Messages confirming task completion will automatically update project checklists.
-          </div>
-          {filteredMessages.map((m, i) => (
-            <div key={m.id} className="slide-in" style={{ display: "flex", gap: 12, marginBottom: 16, animationDelay: `${i * 0.05}s` }}>
-              <Avatar initials={m.avatar} size={36} color={m.channel === "management" ? COLORS.info : COLORS.accent} />
-              <div style={{ flex: 1 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ fontWeight: 700, fontSize: 13 }}>{m.user}</span>
-                  <span style={{ fontSize: 11, color: COLORS.textMuted, fontFamily: FONTS.mono }}>{m.time}</span>
-                  {m.project && <Badge color={COLORS.textMuted} small>{m.project}</Badge>}
-                </div>
-                <div style={{ fontSize: 14, color: COLORS.textSecondary, marginTop: 4, lineHeight: 1.5 }}>{m.text}</div>
+      <div style={{ flex: 1, overflowY: "auto", padding: isMobile ? "12px 16px" : "16px 24px" }}>
+        <div style={{ padding: "10px 14px", background: `${COLORS.info}10`, borderRadius: 8, border: `1px solid ${COLORS.info}25`, marginBottom: 16, fontSize: 12, color: COLORS.info }}>
+          <strong>📋 Auto-Detection Active:</strong> Messages confirming task completion will automatically update project checklists.
+        </div>
+        {filteredMessages.map((m, i) => (
+          <div key={m.id} className="slide-in" style={{ display: "flex", gap: 10, marginBottom: 14, animationDelay: `${i * 0.05}s` }}>
+            <Avatar initials={m.avatar} size={isMobile ? 32 : 36} color={m.channel === "management" ? COLORS.info : COLORS.accent} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                <span style={{ fontWeight: 700, fontSize: 13 }}>{m.user}</span>
+                <span style={{ fontSize: 11, color: COLORS.textMuted, fontFamily: FONTS.mono }}>{m.time}</span>
+                {m.project && <Badge color={COLORS.textMuted} small>{m.project}</Badge>}
               </div>
+              <div style={{ fontSize: 14, color: COLORS.textSecondary, marginTop: 4, lineHeight: 1.5 }}>{m.text}</div>
             </div>
-          ))}
-          <div ref={messagesEndRef} />
-        </div>
-
-        <div style={{ padding: "16px 24px", borderTop: `1px solid ${COLORS.border}` }}>
-          <div style={{ display: "flex", gap: 8 }}>
-            <input
-              value={newMessage}
-              onChange={e => setNewMessage(e.target.value)}
-              onKeyDown={e => e.key === "Enter" && sendMessage()}
-              placeholder={`Message #${channels.find(c => c.id === activeChannel)?.name}...`}
-              style={{
-                flex: 1, padding: "12px 16px", borderRadius: 8, border: `1px solid ${COLORS.border}`,
-                background: COLORS.surface, color: COLORS.text, fontSize: 14, outline: "none",
-              }}
-            />
-            <Button onClick={sendMessage} icon="send">Send</Button>
           </div>
+        ))}
+        <div ref={messagesEndRef} />
+      </div>
+
+      <div style={{ padding: isMobile ? "12px 16px" : "16px 24px", borderTop: `1px solid ${COLORS.border}` }}>
+        <div style={{ display: "flex", gap: 8 }}>
+          <input
+            value={newMessage}
+            onChange={e => setNewMessage(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && sendMessage()}
+            placeholder={`Message #${channels.find(c => c.id === activeChannel)?.name}...`}
+            style={{
+              flex: 1, padding: "10px 14px", borderRadius: 8, border: `1px solid ${COLORS.border}`,
+              background: COLORS.surface, color: COLORS.text, fontSize: 14, outline: "none",
+            }}
+          />
+          <Button onClick={sendMessage} icon="send">{isMobile ? "" : "Send"}</Button>
         </div>
       </div>
+    </div>
+  );
+
+  return (
+    <div style={{ display: "flex", height: "100vh" }}>
+      {isMobile ? (showChannelList ? channelPanel : messagePanel) : <>{channelPanel}{messagePanel}</>}
     </div>
   );
 };
@@ -1078,7 +1339,25 @@ const MessagesView = ({ isMobile }) => {
 // ─── PROJECTS VIEW ──────────────────────────────────────
 const ProjectsView = ({ selectedProject, setSelectedProject, isMobile }) => {
   const [projects, setProjects] = useState(PROJECTS);
+  const [closedProjects] = useState(CLOSED_PROJECTS);
+  const [projectTab, setProjectTab] = useState("active");
+  const [showCreateProject, setShowCreateProject] = useState(false);
+  const [newProject, setNewProject] = useState({ name: "", client: "", type: "Residential", location: "", crew: "Unassigned", budget: "", startDate: "", endDate: "" });
   const [newItem, setNewItem] = useState("");
+
+  const createProject = () => {
+    if (!newProject.name || !newProject.client) return;
+    const proj = {
+      id: "P-" + (1005 + projects.length), ...newProject,
+      budget: Number(newProject.budget) || 0, spent: 0, progress: 0,
+      status: "bidding", checklist: [], timeline: [
+        { date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" }), event: "Project created", user: "Sarah Chen", type: "milestone" },
+      ],
+    };
+    setProjects([...projects, proj]);
+    setNewProject({ name: "", client: "", type: "Residential", location: "", crew: "Unassigned", budget: "", startDate: "", endDate: "" });
+    setShowCreateProject(false);
+  };
 
   const statusColors = { "in-progress": COLORS.info, bidding: COLORS.warning, completed: COLORS.success, on_hold: COLORS.danger };
   const timelineColors = { milestone: COLORS.accent, update: COLORS.info, delay: COLORS.danger };
@@ -1340,70 +1619,14 @@ const InventoryView = ({ isMobile }) => {
   );
 };
 
-// ─── CUSTOM MAP MARKERS ─────────────────────────────────
-const createVehicleIcon = (status) => {
-  const colors = { "on-site": COLORS.success, "in-transit": COLORS.info, idle: COLORS.warning, maintenance: COLORS.danger };
-  const color = colors[status] || COLORS.textMuted;
-  return L.divIcon({
-    className: "",
-    iconSize: [32, 32],
-    iconAnchor: [16, 16],
-    popupAnchor: [0, -18],
-    html: `<div style="
-      width:32px;height:32px;border-radius:50%;
-      background:${color}22;border:3px solid ${color};
-      display:flex;align-items:center;justify-content:center;
-      box-shadow:0 0 12px ${color}55, 0 2px 8px rgba(0,0,0,0.4);
-      position:relative;
-    ">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="${color}"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
-      ${status === "in-transit" ? `<div style="position:absolute;width:100%;height:100%;border-radius:50%;border:2px solid ${color};animation:pulse 2s infinite;top:-2px;left:-2px;"></div>` : ""}
-    </div>`,
-  });
-};
-
-const createEmployeeIcon = (status) => {
-  const color = status === "active" ? COLORS.success : status === "break" ? COLORS.warning : COLORS.textMuted;
-  return L.divIcon({
-    className: "",
-    iconSize: [28, 28],
-    iconAnchor: [14, 14],
-    popupAnchor: [0, -16],
-    html: `<div style="
-      width:28px;height:28px;border-radius:50%;
-      background:${color}22;border:3px solid ${color};
-      display:flex;align-items:center;justify-content:center;
-      box-shadow:0 0 10px ${color}44, 0 2px 6px rgba(0,0,0,0.3);
-    ">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="${color}"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-    </div>`,
-  });
-};
-
-// Fit map bounds to markers
-const MapBoundsUpdater = ({ positions }) => {
-  const map = useMap();
-  useEffect(() => {
-    if (positions.length > 0) {
-      const bounds = L.latLngBounds(positions.map(p => [p.lat, p.lng]));
-      map.fitBounds(bounds, { padding: [50, 50], maxZoom: 12 });
-    }
-  }, [positions, map]);
-  return null;
-};
-
 // ─── FLEET & CREW TRACKING ──────────────────────────────
 const TrackingView = ({ isMobile }) => {
   const [tab, setTab] = useState("vehicles");
   const [selectedItem, setSelectedItem] = useState(null);
 
-  const mapCenter = [39.95, -84.5]; // Midwest center
-  const positions = tab === "vehicles"
-    ? VEHICLES.map(v => ({ lat: v.lat, lng: v.lng }))
-    : EMPLOYEES.filter(e => e.crew !== "HQ").map((e, i) => {
-        const crew = VEHICLES.find(v => v.crew === e.crew);
-        return { lat: (crew?.lat || 39.77) + (i * 0.002), lng: (crew?.lng || -86.16) + (i * 0.002) };
-      });
+  // Build OpenStreetMap iframe URL with markers
+  const mapCenter = "39.85,-84.5";
+  const mapUrl = `https://www.openstreetmap.org/export/embed.html?bbox=-88.0,38.5,-81.0,42.5&layer=mapnik&marker=${mapCenter}`;
 
   return (
     <div style={{ padding: isMobile ? 16 : 32, overflowY: "auto", height: "100vh" }}>
@@ -1415,70 +1638,71 @@ const TrackingView = ({ isMobile }) => {
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 380px", gap: isMobile ? 12 : 20 }}>
-        <Card style={{ padding: 0, overflow: "hidden", minHeight: 560, borderRadius: 12 }}>
-          <MapContainer
-            center={mapCenter}
-            zoom={7}
-            style={{ width: "100%", height: 560, borderRadius: 12 }}
-            zoomControl={false}
-          >
-            <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> | &copy; <a href="https://carto.com/">CARTO</a>'
-              url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-            />
-            <MapBoundsUpdater positions={positions} />
-
-            {tab === "vehicles" && VEHICLES.map(v => (
-              <Marker
-                key={v.id}
-                position={[v.lat, v.lng]}
-                icon={createVehicleIcon(v.status)}
-                eventHandlers={{ click: () => setSelectedItem(v) }}
-              >
-                <Popup>
-                  <div style={{ fontFamily: FONTS.body, minWidth: 180 }}>
-                    <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 4 }}>{v.id} — {v.name}</div>
-                    <div style={{ fontSize: 12, color: "#666", marginBottom: 2 }}>{v.type} • {v.crew} Crew</div>
-                    <div style={{ fontSize: 12, display: "flex", gap: 12, marginTop: 6 }}>
-                      <span>⛽ {v.fuel}%</span>
-                      {v.speed > 0 && <span>🏎️ {v.speed} mph</span>}
-                      <span style={{ fontWeight: 600, textTransform: "capitalize" }}>{v.status}</span>
-                    </div>
-                  </div>
-                </Popup>
-              </Marker>
-            ))}
-
-            {tab === "employees" && EMPLOYEES.filter(e => e.crew !== "HQ").map((emp, i) => {
-              const crew = VEHICLES.find(v => v.crew === emp.crew);
-              const lat = (crew?.lat || 39.77) + (i * 0.002);
-              const lng = (crew?.lng || -86.16) + (i * 0.002);
+        <Card style={{ padding: 0, overflow: "hidden", minHeight: 560, borderRadius: 12, position: "relative" }}>
+          <iframe
+            src={mapUrl}
+            style={{ width: "100%", height: isMobile ? 300 : 560, border: "none", borderRadius: 12, filter: "invert(0.9) hue-rotate(180deg) brightness(1.2) contrast(0.9)" }}
+            title="Fleet Map"
+          />
+          {/* Vehicle overlay markers */}
+          <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", pointerEvents: "none", borderRadius: 12 }}>
+            {(tab === "vehicles" ? VEHICLES : []).map((v) => {
+              const x = 15 + ((v.lng + 88) / 7) * 70;
+              const y = 10 + ((42.5 - v.lat) / 4) * 80;
+              const statusColor = v.status === "on-site" ? COLORS.success : v.status === "in-transit" ? COLORS.info : v.status === "idle" ? COLORS.warning : COLORS.danger;
               return (
-                <Marker
-                  key={emp.id}
-                  position={[lat, lng]}
-                  icon={createEmployeeIcon(emp.status)}
-                  eventHandlers={{ click: () => setSelectedItem(emp) }}
-                >
-                  <Popup>
-                    <div style={{ fontFamily: FONTS.body, minWidth: 160 }}>
-                      <div style={{ fontWeight: 700, fontSize: 14 }}>{emp.name}</div>
-                      <div style={{ fontSize: 12, color: "#666" }}>{emp.role} • {emp.crew} Crew</div>
-                      <div style={{ fontSize: 12, marginTop: 4, textTransform: "capitalize" }}>Status: {emp.status}</div>
-                    </div>
-                  </Popup>
-                </Marker>
+                <div key={v.id} style={{
+                  position: "absolute", left: `${Math.max(5, Math.min(90, x))}%`, top: `${Math.max(5, Math.min(90, y))}%`,
+                  transform: "translate(-50%, -50%)", zIndex: 10, pointerEvents: "auto",
+                }}>
+                  <div style={{
+                    width: 28, height: 28, borderRadius: "50%", background: `${statusColor}33`, border: `3px solid ${statusColor}`,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    boxShadow: `0 0 12px ${statusColor}55, 0 2px 8px rgba(0,0,0,0.4)`,
+                    animation: v.status === "in-transit" ? "pulse 2s infinite" : "none",
+                    cursor: "pointer",
+                  }} onClick={() => setSelectedItem(v)}>
+                    <Icon name="truck" size={12} color={statusColor} />
+                  </div>
+                  <div style={{
+                    position: "absolute", top: 30, left: "50%", transform: "translateX(-50%)",
+                    fontSize: 9, fontFamily: FONTS.mono, color: COLORS.text,
+                    whiteSpace: "nowrap", background: COLORS.bg, padding: "2px 6px", borderRadius: 4,
+                    border: `1px solid ${COLORS.border}`,
+                  }}>{v.id}</div>
+                </div>
               );
             })}
-          </MapContainer>
-
-          {/* Map legend overlay */}
+            {tab === "employees" && EMPLOYEES.filter(e => e.crew !== "HQ").map((emp, i) => {
+              const crew = VEHICLES.find(v => v.crew === emp.crew);
+              const lat = (crew?.lat || 39.77) + (i * 0.15);
+              const lng = (crew?.lng || -86.16) + (i * 0.15);
+              const x = 15 + ((lng + 88) / 7) * 70;
+              const y = 10 + ((42.5 - lat) / 4) * 80;
+              const statusColor = emp.status === "active" ? COLORS.success : emp.status === "break" ? COLORS.warning : COLORS.textMuted;
+              return (
+                <div key={emp.id} style={{
+                  position: "absolute", left: `${Math.max(5, Math.min(90, x))}%`, top: `${Math.max(5, Math.min(90, y))}%`,
+                  transform: "translate(-50%, -50%)", zIndex: 10, pointerEvents: "auto",
+                }}>
+                  <div style={{
+                    width: 24, height: 24, borderRadius: "50%", background: `${statusColor}33`, border: `2px solid ${statusColor}`,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    boxShadow: `0 0 8px ${statusColor}44`,
+                    cursor: "pointer",
+                  }} onClick={() => setSelectedItem(emp)}>
+                    <Icon name="people" size={10} color={statusColor} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          {/* Legend */}
           <div style={{
-            position: "relative", bottom: 52, left: 12, zIndex: 1000,
-            display: "inline-flex", gap: 14, padding: "8px 14px",
+            position: "absolute", bottom: 12, left: 12, zIndex: 20,
+            display: "flex", gap: 14, padding: "8px 14px",
             background: COLORS.bg, borderRadius: 8, border: `1px solid ${COLORS.border}`,
-            fontSize: 10, fontFamily: FONTS.mono, width: "fit-content", marginLeft: 12,
-            backdropFilter: "blur(8px)",
+            fontSize: 10, fontFamily: FONTS.mono,
           }}>
             {[
               { s: "on-site", c: COLORS.success },
@@ -1494,7 +1718,7 @@ const TrackingView = ({ isMobile }) => {
           </div>
         </Card>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 10, maxHeight: 560, overflowY: "auto" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, maxHeight: isMobile ? 300 : 560, overflowY: "auto" }}>
           {tab === "vehicles" ? VEHICLES.map((v, i) => {
             const statusColor = v.status === "on-site" ? COLORS.success : v.status === "in-transit" ? COLORS.info : v.status === "idle" ? COLORS.warning : COLORS.danger;
             const isSelected = selectedItem?.id === v.id;
@@ -1567,12 +1791,265 @@ const TrackingView = ({ isMobile }) => {
   );
 };
 
+
+// ─── PROJECT MAP VIEW ────────────────────────────────────
+const ProjectMapView = ({ isMobile }) => {
+  const [filter, setFilter] = useState("all");
+  const allProjects = [...PROJECTS, ...CLOSED_PROJECTS];
+  const filtered = filter === "all" ? allProjects : allProjects.filter(p => p.status === filter);
+
+  const statusColors = { "in-progress": COLORS.accent, "completed": COLORS.success, "bidding": COLORS.info };
+  const statusLabels = { "all": "All Projects", "in-progress": "Active", "completed": "Completed", "bidding": "Bidding" };
+
+  const projectCoords = {
+    "P-1001": { lat: 39.7684, lng: -86.1581 },
+    "P-1002": { lat: 39.9612, lng: -82.9988 },
+    "P-1003": { lat: 39.7589, lng: -84.1916 },
+    "P-1004": { lat: 39.8000, lng: -86.1200 },
+    "P-0998": { lat: 39.9784, lng: -86.1180 },
+    "P-0995": { lat: 39.7851, lng: -85.7694 },
+    "P-0991": { lat: 39.9568, lng: -86.0180 },
+    "P-0987": { lat: 40.0429, lng: -86.1277 },
+    "P-0980": { lat: 40.1053, lng: -85.6803 },
+  };
+
+  return (
+    <div className="view-container" style={{ padding: isMobile ? 16 : 32, overflowY: "auto", height: "100vh" }}>
+      <SectionHeader title="Project Map" subtitle={`${filtered.length} projects shown`} />
+
+      {/* Filter Chips */}
+      <div style={{ display: "flex", gap: 8, marginBottom: 20, flexWrap: "wrap" }}>
+        {Object.entries(statusLabels).map(([key, label]) => (
+          <button key={key} onClick={() => setFilter(key)} style={{
+            padding: "6px 16px", borderRadius: 20,
+            border: `1px solid ${filter === key ? COLORS.accent : COLORS.border}`,
+            background: filter === key ? `${COLORS.accent}15` : "transparent",
+            color: filter === key ? COLORS.accent : COLORS.textSecondary,
+            cursor: "pointer", fontSize: 13, fontFamily: FONTS.body, fontWeight: 500,
+          }}>
+            {label} ({key === "all" ? allProjects.length : allProjects.filter(p => p.status === key).length})
+          </button>
+        ))}
+      </div>
+
+      {/* Map */}
+      <div className="map-grid" style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 340px", gap: 20 }}>
+        <Card style={{ padding: 0, overflow: "hidden" }}>
+          <iframe
+            title="Project Map"
+            src="https://www.openstreetmap.org/export/embed.html?bbox=-87.5%2C39.2%2C-82.5%2C40.5&layer=mapnik"
+            style={{ width: "100%", height: isMobile ? 350 : 520, border: "none" }}
+          />
+          {/* Overlay markers */}
+          <div style={{ position: "relative", marginTop: -60, padding: "0 16px 16px", zIndex: 2 }}>
+            <div style={{
+              background: COLORS.bg, borderRadius: 10, padding: "10px 14px",
+              border: `1px solid ${COLORS.border}`, fontSize: 12, color: COLORS.textMuted,
+            }}>
+              <span style={{ color: COLORS.accent }}>●</span> Active &nbsp;
+              <span style={{ color: COLORS.success }}>●</span> Completed &nbsp;
+              <span style={{ color: COLORS.info }}>●</span> Bidding
+            </div>
+          </div>
+        </Card>
+
+        {/* Project List */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, maxHeight: isMobile ? 350 : 520, overflowY: "auto" }}>
+          {filtered.map(p => (
+            <Card key={p.id} style={{ padding: 14, cursor: "pointer" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
+                <div>
+                  <div style={{ fontWeight: 600, fontSize: 13 }}>{p.name}</div>
+                  <div style={{ fontSize: 11, color: COLORS.textMuted, marginTop: 2 }}>{p.location}</div>
+                </div>
+                <span style={{
+                  width: 10, height: 10, borderRadius: "50%", flexShrink: 0,
+                  background: statusColors[p.status] || COLORS.textMuted,
+                }} />
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 11, color: COLORS.textSecondary }}>
+                <span>{p.client}</span>
+                <Badge small color={statusColors[p.status]}>{p.status.replace("-", " ")}</Badge>
+              </div>
+              {p.progress > 0 && p.progress < 100 && (
+                <div style={{ marginTop: 8 }}><ProgressBar value={p.progress} height={4} /></div>
+              )}
+            </Card>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
+// ─── ESTIMATES & BILLING VIEW ────────────────────────────
+const EstimatesView = ({ isMobile }) => {
+  const [tab, setTab] = useState("estimates");
+  const [showCreate, setShowCreate] = useState(false);
+  const [newEst, setNewEst] = useState({ client: "", project: "", items: [{ desc: "", qty: 1, rate: 0 }] });
+
+  const addItem = () => setNewEst(prev => ({ ...prev, items: [...prev.items, { desc: "", qty: 1, rate: 0 }] }));
+  const updateItem = (i, field, val) => {
+    const items = [...newEst.items];
+    items[i] = { ...items[i], [field]: field === "desc" ? val : Number(val) };
+    setNewEst(prev => ({ ...prev, items }));
+  };
+  const estTotal = newEst.items.reduce((sum, i) => sum + (i.qty * i.rate), 0);
+
+  const statusColors = { accepted: COLORS.success, pending: COLORS.warning, declined: COLORS.danger, sent: COLORS.info, paid: COLORS.success, partial: COLORS.warning, overdue: COLORS.danger };
+
+  return (
+    <div className="view-container" style={{ padding: isMobile ? 16 : 32, overflowY: "auto", height: "100vh" }}>
+      <SectionHeader title="Estimates & Billing" subtitle="Create, send, and track payments" action={
+        <Button onClick={() => setShowCreate(!showCreate)} icon="add">{showCreate ? "Cancel" : "New Estimate"}</Button>
+      } />
+
+      {/* Tabs */}
+      <div style={{ display: "flex", gap: 0, marginBottom: 24, borderBottom: `1px solid ${COLORS.border}` }}>
+        {[["estimates", "Estimates"], ["invoices", "Invoices & Billing"], ["stripe", "Stripe Connect"]].map(([id, label]) => (
+          <button key={id} onClick={() => setTab(id)} style={{
+            padding: "10px 20px", border: "none", cursor: "pointer",
+            background: "transparent", fontFamily: FONTS.body, fontSize: 13, fontWeight: 500,
+            color: tab === id ? COLORS.accent : COLORS.textMuted,
+            borderBottom: tab === id ? `2px solid ${COLORS.accent}` : "2px solid transparent",
+          }}>{label}</button>
+        ))}
+      </div>
+
+      {/* Create Estimate Form */}
+      {showCreate && (
+        <Card style={{ marginBottom: 24, border: `1px solid ${COLORS.accent}30` }}>
+          <h3 style={{ fontFamily: FONTS.display, fontSize: 16, fontWeight: 600, marginBottom: 16 }}>New Estimate</h3>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 12, marginBottom: 16 }}>
+            <input placeholder="Client name" value={newEst.client} onChange={e => setNewEst({...newEst, client: e.target.value})}
+              style={{ padding: "10px 14px", borderRadius: 8, border: `1px solid ${COLORS.border}`, background: COLORS.surface, color: COLORS.text, fontSize: 14, outline: "none" }} />
+            <input placeholder="Project description" value={newEst.project} onChange={e => setNewEst({...newEst, project: e.target.value})}
+              style={{ padding: "10px 14px", borderRadius: 8, border: `1px solid ${COLORS.border}`, background: COLORS.surface, color: COLORS.text, fontSize: 14, outline: "none" }} />
+          </div>
+          <div style={{ fontSize: 12, fontFamily: FONTS.mono, color: COLORS.textMuted, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>Line Items</div>
+          {newEst.items.map((item, i) => (
+            <div key={i} style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "2fr 80px 120px", gap: 8, marginBottom: 8 }}>
+              <input placeholder="Description" value={item.desc} onChange={e => updateItem(i, "desc", e.target.value)}
+                style={{ padding: "8px 12px", borderRadius: 6, border: `1px solid ${COLORS.border}`, background: COLORS.surface, color: COLORS.text, fontSize: 13, outline: "none" }} />
+              <input placeholder="Qty" type="number" value={item.qty || ""} onChange={e => updateItem(i, "qty", e.target.value)}
+                style={{ padding: "8px 12px", borderRadius: 6, border: `1px solid ${COLORS.border}`, background: COLORS.surface, color: COLORS.text, fontSize: 13, outline: "none" }} />
+              <input placeholder="Rate $" type="number" value={item.rate || ""} onChange={e => updateItem(i, "rate", e.target.value)}
+                style={{ padding: "8px 12px", borderRadius: 6, border: `1px solid ${COLORS.border}`, background: COLORS.surface, color: COLORS.text, fontSize: 13, outline: "none" }} />
+            </div>
+          ))}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 12 }}>
+            <Button variant="ghost" size="sm" onClick={addItem} icon="add">Add Line Item</Button>
+            <div style={{ fontFamily: FONTS.display, fontSize: 20, fontWeight: 700, color: COLORS.accent }}>
+              Total: ${estTotal.toLocaleString()}
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 8, marginTop: 16, justifyContent: "flex-end" }}>
+            <Button variant="ghost" onClick={() => {}}>Save Draft</Button>
+            <Button onClick={() => {}}>Send as PDF</Button>
+          </div>
+        </Card>
+      )}
+
+      {tab === "estimates" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <div style={{ fontSize: 11, color: COLORS.textMuted, marginBottom: 4 }}>
+            <strong>Tip:</strong> Estimates can be based on past jobs. Select a past estimate to use as a template.
+          </div>
+          {ESTIMATES.map(est => (
+            <Card key={est.id} style={{ padding: 16, cursor: "pointer" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 8 }}>
+                <div>
+                  <div style={{ fontFamily: FONTS.mono, fontSize: 11, color: COLORS.textMuted, marginBottom: 4 }}>{est.id}</div>
+                  <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 2 }}>{est.project}</div>
+                  <div style={{ fontSize: 12, color: COLORS.textSecondary }}>{est.client} · {est.date}</div>
+                </div>
+                <div style={{ textAlign: "right" }}>
+                  <div style={{ fontFamily: FONTS.display, fontSize: 22, fontWeight: 700, color: COLORS.accent }}>${est.amount.toLocaleString()}</div>
+                  <Badge color={statusColors[est.status]} small>{est.status}</Badge>
+                </div>
+              </div>
+              <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+                <Button variant="ghost" size="sm" icon="pdf">PDF</Button>
+                <Button variant="ghost" size="sm" icon="email">Email</Button>
+                <Button variant="ghost" size="sm" icon="send">Text</Button>
+                <Button variant="ghost" size="sm" icon="edit">Duplicate</Button>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {tab === "invoices" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {INVOICES.map(inv => (
+            <Card key={inv.id} style={{ padding: 16 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 8 }}>
+                <div>
+                  <div style={{ fontFamily: FONTS.mono, fontSize: 11, color: COLORS.textMuted, marginBottom: 4 }}>{inv.id}</div>
+                  <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 2 }}>{inv.project}</div>
+                  <div style={{ fontSize: 12, color: COLORS.textSecondary }}>{inv.client} · Due: {inv.dueDate}</div>
+                </div>
+                <div style={{ textAlign: "right" }}>
+                  <div style={{ fontFamily: FONTS.display, fontSize: 22, fontWeight: 700, color: inv.status === "paid" ? COLORS.success : COLORS.accent }}>
+                    ${inv.amount.toLocaleString()}
+                  </div>
+                  <Badge color={statusColors[inv.status]} small>{inv.status}</Badge>
+                </div>
+              </div>
+              {inv.status !== "paid" && (
+                <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+                  <Button size="sm" icon="send">Send Payment Link</Button>
+                  <Button variant="ghost" size="sm" icon="email">Send Reminder</Button>
+                </div>
+              )}
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {tab === "stripe" && (
+        <Card>
+          <div style={{ textAlign: "center", padding: isMobile ? 20 : 40 }}>
+            <div style={{
+              width: 60, height: 60, borderRadius: 16, margin: "0 auto 16px",
+              background: "#635BFF15", display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="#635BFF"><path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445 1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921-6.99-2.109l-.9 5.555C5.175 22.99 8.385 24 11.714 24c2.641 0 4.843-.624 6.328-1.813 1.664-1.305 2.525-3.236 2.525-5.732 0-4.128-2.524-5.851-6.591-7.305z"/></svg>
+            </div>
+            <h3 style={{ fontFamily: FONTS.display, fontSize: 20, fontWeight: 600, marginBottom: 8 }}>Stripe Connect</h3>
+            <p style={{ fontSize: 14, color: COLORS.textSecondary, marginBottom: 24, maxWidth: 400, margin: "0 auto 24px" }}>
+              Connect your Stripe account to accept credit card payments, send payment links, and auto-reconcile invoices.
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12, maxWidth: 320, margin: "0 auto" }}>
+              <input placeholder="Stripe API Key (sk_live_...)" style={{
+                padding: "12px 16px", borderRadius: 8, border: `1px solid ${COLORS.border}`,
+                background: COLORS.surface, color: COLORS.text, fontSize: 13, outline: "none",
+                fontFamily: FONTS.mono,
+              }} />
+              <Button style={{ background: "#635BFF", border: "none" }}>Connect Stripe</Button>
+              <p style={{ fontSize: 11, color: COLORS.textMuted }}>
+                You can add your API key later. Find it at dashboard.stripe.com/apikeys
+              </p>
+            </div>
+          </div>
+        </Card>
+      )}
+    </div>
+  );
+};
+
 // ─── LEAD INTELLIGENCE VIEW ─────────────────────────────
 const LeadsView = ({ isMobile }) => {
   const [typeFilter, setTypeFilter] = useState("All");
   const [selectedLead, setSelectedLead] = useState(null);
-  const [viewTab, setViewTab] = useState("leads"); // "leads" | "sources"
+  const [viewTab, setViewTab] = useState("leads"); // "leads" | "sources" | "geofence"
   const [sourceCategory, setSourceCategory] = useState("all");
+  const [geoFence, setGeoFence] = useState({
+    targetTitle: "", targetOrg: "", location: "", radiusMiles: 1,
+    platform: "meta", budget: 30, duration: 7,
+    adCopy: "Award-winning paving contractor serving Central Indiana. Licensed, insured, competitive pricing.",
+  });
 
   const filtered = typeFilter === "All" ? LEADS : LEADS.filter(l => l.type === typeFilter);
   const typeColors = { Bond: COLORS.info, RFP: COLORS.accent, Permit: COLORS.success };
@@ -1674,14 +2151,94 @@ const LeadsView = ({ isMobile }) => {
         action={
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             <Badge color={COLORS.success}>SCANNER ACTIVE</Badge>
-            <Button variant="secondary" size="sm" onClick={() => setViewTab("sources")}>
-              Data Sources ({allSources.length})
-            </Button>
             <Button icon="search" size="sm">Manual Search</Button>
           </div>
         }
       />
 
+      {/* Tab Bar */}
+      <div style={{ display: "flex", gap: 0, marginBottom: 20, borderBottom: `1px solid ${COLORS.border}` }}>
+        {[["leads", "Pipeline"], ["sources", `Data Sources (${allSources.length})`], ["geofence", "Geo-Fence Targeting"]].map(([id, label]) => (
+          <button key={id} onClick={() => setViewTab(id)} style={{
+            padding: "10px 20px", border: "none", cursor: "pointer",
+            background: "transparent", fontFamily: FONTS.body, fontSize: 13, fontWeight: 500,
+            color: viewTab === id ? COLORS.accent : COLORS.textMuted,
+            borderBottom: viewTab === id ? `2px solid ${COLORS.accent}` : "2px solid transparent",
+          }}>{label}</button>
+        ))}
+      </div>
+
+      {viewTab === "geofence" && (
+        <Card>
+          <h3 style={{ fontFamily: FONTS.display, fontSize: 16, fontWeight: 600, marginBottom: 6 }}>Geo-Fence Decision Makers</h3>
+          <p style={{ fontSize: 13, color: COLORS.textSecondary, marginBottom: 20 }}>
+            Target government officials, project managers, and procurement officers at their offices. Automatically creates Meta/Facebook ad campaigns with location-based targeting.
+          </p>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 16 }}>
+            <div>
+              <div style={{ fontSize: 12, fontFamily: FONTS.mono, color: COLORS.textMuted, letterSpacing: 1, textTransform: "uppercase", marginBottom: 12 }}>Target Configuration</div>
+              {[
+                ["targetTitle", "Target Job Title", "e.g. County Engineer, Public Works Director"],
+                ["targetOrg", "Organization", "e.g. Marion County DOT, City of Indianapolis"],
+                ["location", "Office Address to Geo-Fence", "e.g. 200 E Washington St, Indianapolis, IN"],
+              ].map(([key, label, placeholder]) => (
+                <div key={key} style={{ marginBottom: 12 }}>
+                  <div style={{ fontSize: 11, color: COLORS.textMuted, marginBottom: 4 }}>{label}</div>
+                  <input placeholder={placeholder} value={geoFence[key]} onChange={e => setGeoFence({...geoFence, [key]: e.target.value})}
+                    style={{ width: "100%", padding: "10px 14px", borderRadius: 8, border: `1px solid ${COLORS.border}`, background: COLORS.surface, color: COLORS.text, fontSize: 13, outline: "none" }} />
+                </div>
+              ))}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <div>
+                  <div style={{ fontSize: 11, color: COLORS.textMuted, marginBottom: 4 }}>Radius (miles)</div>
+                  <input type="number" value={geoFence.radiusMiles} onChange={e => setGeoFence({...geoFence, radiusMiles: Number(e.target.value)})}
+                    style={{ width: "100%", padding: "10px 14px", borderRadius: 8, border: `1px solid ${COLORS.border}`, background: COLORS.surface, color: COLORS.text, fontSize: 13, outline: "none" }} />
+                </div>
+                <div>
+                  <div style={{ fontSize: 11, color: COLORS.textMuted, marginBottom: 4 }}>Duration (days)</div>
+                  <input type="number" value={geoFence.duration} onChange={e => setGeoFence({...geoFence, duration: Number(e.target.value)})}
+                    style={{ width: "100%", padding: "10px 14px", borderRadius: 8, border: `1px solid ${COLORS.border}`, background: COLORS.surface, color: COLORS.text, fontSize: 13, outline: "none" }} />
+                </div>
+              </div>
+            </div>
+            <div>
+              <div style={{ fontSize: 12, fontFamily: FONTS.mono, color: COLORS.textMuted, letterSpacing: 1, textTransform: "uppercase", marginBottom: 12 }}>Meta / Facebook Ad Setup</div>
+              <div style={{ padding: 16, borderRadius: 10, background: `${COLORS.info}08`, border: `1px solid ${COLORS.info}20`, marginBottom: 12 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+                  <span style={{ fontWeight: 600, fontSize: 14, color: COLORS.info }}>Meta Ads Manager</span>
+                  <Badge color={COLORS.info} small>AUTO-FILL</Badge>
+                </div>
+                <div style={{ fontSize: 12, color: COLORS.textSecondary, lineHeight: 1.6 }}>
+                  The app will auto-populate Meta Ads Manager fields:<br/>
+                  • <strong>Campaign Objective:</strong> Awareness → Reach<br/>
+                  • <strong>Audience Location:</strong> Drop pin + {geoFence.radiusMiles} mi radius<br/>
+                  • <strong>Job Title Targeting:</strong> {geoFence.targetTitle || "—"}<br/>
+                  • <strong>Employer Targeting:</strong> {geoFence.targetOrg || "—"}<br/>
+                  • <strong>Budget:</strong> ${geoFence.budget}/day × {geoFence.duration} days<br/>
+                  • <strong>Total Spend:</strong> ${geoFence.budget * geoFence.duration}
+                </div>
+              </div>
+              <div style={{ marginBottom: 12 }}>
+                <div style={{ fontSize: 11, color: COLORS.textMuted, marginBottom: 4 }}>Daily Budget ($)</div>
+                <input type="number" value={geoFence.budget} onChange={e => setGeoFence({...geoFence, budget: Number(e.target.value)})}
+                  style={{ width: "100%", padding: "10px 14px", borderRadius: 8, border: `1px solid ${COLORS.border}`, background: COLORS.surface, color: COLORS.text, fontSize: 13, outline: "none" }} />
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: COLORS.textMuted, marginBottom: 4 }}>Ad Copy</div>
+                <textarea value={geoFence.adCopy} onChange={e => setGeoFence({...geoFence, adCopy: e.target.value})} rows={3}
+                  style={{ width: "100%", padding: "10px 14px", borderRadius: 8, border: `1px solid ${COLORS.border}`, background: COLORS.surface, color: COLORS.text, fontSize: 13, outline: "none", resize: "vertical" }} />
+              </div>
+              <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
+                <Button>Launch Geo-Fence Campaign</Button>
+                <Button variant="ghost">Preview Ad</Button>
+              </div>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {viewTab === "leads" && (
+      <>
       <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)", gap: 12, marginBottom: 24 }}>
         {[
           { type: "Bond", icon: "money", desc: "Infrastructure bonds with road/paving allocations", count: LEADS.filter(l => l.type === "Bond").length },
@@ -1705,7 +2262,7 @@ const LeadsView = ({ isMobile }) => {
         ))}
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : (selectedLead ? "1fr 400px" : "1fr"), gap: 20 }}>
+      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : (selectedLead ? "1fr 400px" : "1fr"), gap: isMobile ? 12 : 20 }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           {filtered.map((lead, i) => (
             <Card key={lead.id} onClick={() => setSelectedLead(lead)}
@@ -1803,6 +2360,8 @@ const LeadsView = ({ isMobile }) => {
           </Card>
         )}
       </div>
+      </>
+      )}
     </div>
   );
 };
@@ -1811,6 +2370,8 @@ const LeadsView = ({ isMobile }) => {
 const IntegrationsView = ({ isMobile }) => {
   const [activeService, setActiveService] = useState(null);
   const [emailTab, setEmailTab] = useState("inbox");
+  const [phoneLines] = useState(APP_PHONE_LINES);
+  const [newPhone, setNewPhone] = useState({ label: "", platform: "twilio" });
 
   const services = [
     {
@@ -2015,6 +2576,57 @@ const IntegrationsView = ({ isMobile }) => {
         </div>
       </div>
 
+      {/* Phone & Messaging */}
+      <div style={{ marginBottom: 32 }}>
+        <div style={{ fontSize: 12, fontFamily: FONTS.mono, color: COLORS.textMuted, letterSpacing: 1, textTransform: "uppercase", marginBottom: 12 }}>Phone & Messaging</div>
+        <Card>
+          <p style={{ fontSize: 13, color: COLORS.textSecondary, marginBottom: 16 }}>
+            Virtual phone numbers for the app. Add these to WhatsApp groups, iMessage, Signal, or SMS. All messages import into the knowledge base and auto-create checklists.
+          </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 20 }}>
+            {phoneLines.map(ph => (
+              <div key={ph.id} style={{
+                display: "flex", justifyContent: "space-between", alignItems: "center",
+                padding: 14, borderRadius: 10, background: COLORS.surface, border: `1px solid ${COLORS.border}`, flexWrap: "wrap", gap: 8,
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <div style={{ width: 40, height: 40, borderRadius: 10, background: `${COLORS.success}15`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <Icon name="phone" size={20} color={COLORS.success} />
+                  </div>
+                  <div>
+                    <div style={{ fontFamily: FONTS.mono, fontSize: 14, fontWeight: 600 }}>{ph.number}</div>
+                    <div style={{ fontSize: 12, color: COLORS.textMuted }}>{ph.label} · {ph.assignedTo}</div>
+                  </div>
+                </div>
+                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                  <Badge color={COLORS.success} small>Active</Badge>
+                  <Badge color={COLORS.info} small>{ph.platform}</Badge>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div style={{ padding: 16, borderRadius: 10, border: `1px dashed ${COLORS.border}`, background: `${COLORS.accent}05` }}>
+            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr auto", gap: 10, alignItems: "end" }}>
+              <div>
+                <div style={{ fontSize: 11, color: COLORS.textMuted, marginBottom: 4 }}>Label</div>
+                <input placeholder="e.g. New Project Line" value={newPhone.label} onChange={e => setNewPhone({...newPhone, label: e.target.value})}
+                  style={{ width: "100%", padding: "10px 14px", borderRadius: 8, border: `1px solid ${COLORS.border}`, background: COLORS.surface, color: COLORS.text, fontSize: 13, outline: "none" }} />
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: COLORS.textMuted, marginBottom: 4 }}>Platform</div>
+                <select value={newPhone.platform} onChange={e => setNewPhone({...newPhone, platform: e.target.value})}
+                  style={{ width: "100%", padding: "10px 14px", borderRadius: 8, border: `1px solid ${COLORS.border}`, background: COLORS.surface, color: COLORS.text, fontSize: 13 }}>
+                  <option value="twilio">Twilio</option>
+                  <option value="whatsapp">WhatsApp Business</option>
+                  <option value="signal">Signal</option>
+                </select>
+              </div>
+              <Button icon="add">Provision Number</Button>
+            </div>
+          </div>
+        </Card>
+      </div>
+
       <div style={{ marginBottom: 32 }}>
         <div style={{ fontSize: 12, fontFamily: FONTS.mono, color: COLORS.textMuted, letterSpacing: 1, textTransform: "uppercase", marginBottom: 12 }}>API Configuration</div>
         <Card>
@@ -2075,13 +2687,92 @@ const IntegrationsView = ({ isMobile }) => {
   );
 };
 
+
+// ─── VOICE ASSISTANT FAB ─────────────────────────────────
+const VoiceAssistantFAB = ({ onCommand, isMobile }) => {
+  const [listening, setListening] = useState(false);
+  const [lastHeard, setLastHeard] = useState("");
+  const [showToast, setShowToast] = useState(false);
+
+  const startVoice = () => {
+    if (!("webkitSpeechRecognition" in window) && !("SpeechRecognition" in window)) {
+      setLastHeard("Voice not supported in this browser");
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
+      return;
+    }
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = "en-US";
+    recognition.onstart = () => setListening(true);
+    recognition.onresult = (event) => {
+      const t = event.results[0][0].transcript.toLowerCase();
+      setLastHeard(t);
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
+      if (t.includes("text") || t.includes("message")) onCommand("messages");
+      else if (t.includes("project") && !t.includes("map")) onCommand("projects");
+      else if (t.includes("map")) onCommand("projectmap");
+      else if (t.includes("estimate") || t.includes("bill") || t.includes("invoice")) onCommand("estimates");
+      else if (t.includes("crew") || t.includes("fleet")) onCommand("tracking");
+      else if (t.includes("lead") || t.includes("bid")) onCommand("leads");
+      else if (t.includes("inventory") || t.includes("material")) onCommand("inventory");
+      else if (t.includes("home") || t.includes("jane")) onCommand("home");
+      else if (t.includes("setting") || t.includes("integration") || t.includes("phone")) onCommand("integrations");
+    };
+    recognition.onerror = () => setListening(false);
+    recognition.onend = () => setListening(false);
+    recognition.start();
+  };
+
+  return (
+    <>
+      {showToast && (
+        <div style={{
+          position: "fixed", bottom: isMobile ? 90 : 100, right: isMobile ? 16 : 28,
+          background: COLORS.surface, border: `1px solid ${COLORS.border}`,
+          borderRadius: 12, padding: "10px 16px", zIndex: 200,
+          fontSize: 13, color: COLORS.text, boxShadow: "0 4px 20px var(--c-shadow)",
+          maxWidth: 280, animation: "fadeIn 0.3s ease-out",
+        }}>
+          <div style={{ fontSize: 10, color: COLORS.textMuted, marginBottom: 2, fontFamily: FONTS.mono }}>JANE HEARD:</div>
+          "{lastHeard}"
+        </div>
+      )}
+      <button onClick={startVoice} style={{
+        position: "fixed", bottom: isMobile ? 24 : 28, right: isMobile ? 16 : 28,
+        width: 56, height: 56, borderRadius: 16, border: "none", cursor: "pointer",
+        background: listening ? COLORS.danger : `linear-gradient(135deg, ${COLORS.accent}, ${COLORS.accentDark})`,
+        display: "flex", alignItems: "center", justifyContent: "center",
+        boxShadow: `0 4px 20px ${listening ? COLORS.danger : COLORS.accent}40`,
+        zIndex: 200, transition: "all 0.2s",
+        animation: listening ? "pulse 1.5s infinite" : "none",
+      }}>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill={listening ? "#fff" : "#000"}>
+          <path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z" />
+        </svg>
+      </button>
+    </>
+  );
+};
+
 // ─── MAIN APP ───────────────────────────────────────────
 export default function App() {
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const [activeTab, setActiveTab] = useState("home");
   const [selectedProject, setSelectedProject] = useState(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [isDark, setIsDark] = useState(true);
   const isMobile = useIsMobile();
+
+  const toggleTheme = useCallback(() => setIsDark(prev => !prev), []);
+
+  // Apply theme to document
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", isDark ? "dark" : "light");
+  }, [isDark]);
 
   const handleNav = (tab) => {
     setActiveTab(tab);
@@ -2091,30 +2782,34 @@ export default function App() {
   const renderView = () => {
     const props = { isMobile };
     switch (activeTab) {
-      case "dashboard": return <DashboardView setActiveTab={handleNav} setSelectedProject={setSelectedProject} {...props} />;
+      case "home": return <HomeView setActiveTab={handleNav} setSelectedProject={setSelectedProject} {...props} />;
       case "messages": return <MessagesView {...props} />;
       case "projects": return <ProjectsView selectedProject={selectedProject} setSelectedProject={setSelectedProject} {...props} />;
+      case "projectmap": return <ProjectMapView {...props} />;
+      case "estimates": return <EstimatesView {...props} />;
       case "inventory": return <InventoryView {...props} />;
       case "tracking": return <TrackingView {...props} />;
       case "leads": return <LeadsView {...props} />;
       case "integrations": return <IntegrationsView {...props} />;
-      default: return <DashboardView setActiveTab={handleNav} setSelectedProject={setSelectedProject} {...props} />;
+      default: return <HomeView setActiveTab={handleNav} setSelectedProject={setSelectedProject} {...props} />;
     }
   };
 
-  const tabLabels = { dashboard: "Dashboard", messages: "Comms Portal", projects: "Projects", inventory: "Inventory", tracking: "Fleet & Crew", leads: "Lead Intel", integrations: "Integrations" };
+  const tabLabels = { home: "Home", messages: "Comms Portal", projects: "Projects", projectmap: "Project Map", estimates: "Estimates", inventory: "Inventory", tracking: "Fleet & Crew", leads: "Lead Intel", integrations: "Integrations" };
 
   return (
     <ThemeContext.Provider value={{ isDark, toggle: toggleTheme }}>
       <GlobalStyles />
       <div style={{ display: "flex", height: "100vh", overflow: "hidden", background: COLORS.bg }}>
+        {/* Desktop sidebar */}
         {!isMobile && (
           <Sidebar activeTab={activeTab} setActiveTab={handleNav} collapsed={sidebarCollapsed} setCollapsed={setSidebarCollapsed} />
         )}
+        {/* Mobile overlay + sidebar */}
         {isMobile && mobileSidebarOpen && (
           <>
             <div onClick={() => setMobileSidebarOpen(false)} style={{
-              position: "fixed", inset: 0, zIndex: 99, background: "rgba(0,0,0,0.6)",
+              position: "fixed", inset: 0, zIndex: 99, background: "var(--c-overlay)",
             }} />
             <div style={{
               position: "fixed", left: 0, top: 0, zIndex: 100, width: 280, height: "100vh",
@@ -2126,24 +2821,28 @@ export default function App() {
           </>
         )}
         <div style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column", minWidth: 0 }}>
+          {/* Mobile header */}
           {isMobile && (
             <div style={{
-              display: "flex", alignItems: "center", gap: 12,
+              display: "flex", alignItems: "center", justifyContent: "space-between",
               padding: "10px 16px", background: COLORS.surface,
               borderBottom: `1px solid ${COLORS.border}`, flexShrink: 0,
             }}>
-              <button onClick={() => setMobileSidebarOpen(true)} style={{
-                background: "none", border: "none", color: COLORS.text,
-                cursor: "pointer", padding: 4, display: "flex",
-              }}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
-              </button>
-              <div style={{
-                width: 28, height: 28, borderRadius: 7, background: `linear-gradient(135deg, ${COLORS.accent}, ${COLORS.accentDark})`,
-                display: "flex", alignItems: "center", justifyContent: "center", fontFamily: FONTS.display,
-                fontWeight: 800, fontSize: 12, color: "#000", flexShrink: 0,
-              }}>P</div>
-              <span style={{ fontFamily: FONTS.display, fontWeight: 600, fontSize: 15 }}>{tabLabels[activeTab]}</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <button onClick={() => setMobileSidebarOpen(true)} style={{
+                  background: "none", border: "none", color: COLORS.text,
+                  cursor: "pointer", padding: 4, display: "flex",
+                }}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+                </button>
+                <div style={{
+                  width: 28, height: 28, borderRadius: 7, background: `linear-gradient(135deg, ${COLORS.accent}, ${COLORS.accentDark})`,
+                  display: "flex", alignItems: "center", justifyContent: "center", fontFamily: FONTS.display,
+                  fontWeight: 800, fontSize: 12, color: "#000", flexShrink: 0,
+                }}>P</div>
+                <span style={{ fontFamily: FONTS.display, fontWeight: 600, fontSize: 15 }}>{tabLabels[activeTab]}</span>
+              </div>
+              <ThemeToggle compact />
             </div>
           )}
           <main style={{ flex: 1, overflow: "hidden" }}>
@@ -2151,6 +2850,8 @@ export default function App() {
           </main>
         </div>
       </div>
+      {/* Voice Assistant FAB */}
+      <VoiceAssistantFAB onCommand={handleNav} isMobile={isMobile} />
     </ThemeContext.Provider>
   );
 }

@@ -562,7 +562,7 @@ const EMAIL_DATA = [
   { id: 1, from: "City of Fishers Procurement", email: "procurement@fishers.in.us", subject: "RFP-2026-0089 Parking Lot Rehabilitation - Q&A Addendum", date: "Feb 26, 10:15 AM", unread: true, label: "RFP", important: true },
   { id: 2, from: "Johnson Family", email: "mjohnson1245@gmail.com", subject: "Re: Driveway project update - looks great so far!", date: "Feb 26, 9:42 AM", unread: true, label: "Client", important: false },
   { id: 3, from: "Midwest Asphalt Supply", email: "orders@midwestasphalt.com", subject: "HMA Delivery Confirmation - Order #8842 - 50 tons", date: "Feb 25, 4:30 PM", unread: false, label: "Vendor", important: false },
-  { id: 4, from: "Raj Patel", email: "raj.patel@paving123.com", subject: "Maple Grove HOA - Site Visit Photos & Initial Estimate", date: "Feb 25, 2:15 PM", unread: false, label: "Internal", important: true },
+  { id: 4, from: "Raj Patel", email: "raj.patel@nationwidepavingusa.com", subject: "Maple Grove HOA - Site Visit Photos & Initial Estimate", date: "Feb 25, 2:15 PM", unread: false, label: "Internal", important: true },
   { id: 5, from: "Hendricks County Procurement", email: "bids@co.hendricks.in.us", subject: "RFP-HC-2026-012 Rural Road Patching - Deadline Reminder March 8", date: "Feb 25, 11:00 AM", unread: false, label: "RFP", important: true },
   { id: 6, from: "INDOT Notifications", email: "noreply@indot.in.gov", subject: "New Letting Schedule Posted - March 2026 Projects", date: "Feb 24, 3:00 PM", unread: false, label: "Lead", important: true },
   { id: 7, from: "Oak Park Shopping Center Mgmt", email: "facilities@oakparkcenter.com", subject: "Re: Parking lot progress - when will striping begin?", date: "Feb 24, 1:22 PM", unread: false, label: "Client", important: false },
@@ -826,10 +826,10 @@ const Sidebar = ({ activeTab, setActiveTab, collapsed, setCollapsed }) => {
             width: 40, height: 40, minWidth: 40, borderRadius: 10, background: `linear-gradient(135deg, ${COLORS.accent}, ${COLORS.accentDark})`,
             display: "flex", alignItems: "center", justifyContent: "center", fontFamily: FONTS.display,
             fontWeight: 800, fontSize: 16, color: "#000", letterSpacing: 1, cursor: "pointer",
-          }} onClick={() => setCollapsed(!collapsed)}>P</div>
+          }} onClick={() => setCollapsed(!collapsed)}>NP</div>
           {!collapsed && (
             <div style={{ whiteSpace: "nowrap" }}>
-              <div style={{ fontFamily: FONTS.display, fontWeight: 700, fontSize: 18, letterSpacing: 1, lineHeight: 1 }}>PAVING 123</div>
+              <div style={{ fontFamily: FONTS.display, fontWeight: 700, fontSize: 18, letterSpacing: 1, lineHeight: 1 }}>NATIONWIDE PAVING USA</div>
               <div style={{ fontSize: 10, color: COLORS.textMuted, fontFamily: FONTS.mono, letterSpacing: 1, marginTop: 2 }}>OPS PLATFORM</div>
             </div>
           )}
@@ -995,7 +995,7 @@ const HomeView = ({ setActiveTab, setSelectedProject, isMobile }) => {
           background: `linear-gradient(135deg, ${COLORS.accent}, ${COLORS.accentDark})`,
           display: "flex", alignItems: "center", justifyContent: "center",
           fontFamily: FONTS.display, fontWeight: 800, fontSize: 24, color: "#000",
-        }}>P</div>
+        }}>NP</div>
         <h1 style={{ fontFamily: FONTS.display, fontSize: isMobile ? 28 : 36, fontWeight: 700, marginBottom: 8, letterSpacing: 1 }}>
           {greeting}, Sarah
         </h1>
@@ -1420,7 +1420,7 @@ const MessagesView = ({ isMobile }) => {
           }}>
             {/* Update Header */}
             <div style={{ padding: "16px 20px", background: `linear-gradient(135deg, ${COLORS.accent}, ${COLORS.accentDark})`, color: "#000" }}>
-              <div style={{ fontFamily: FONTS.display, fontSize: 16, fontWeight: 700 }}>PAVING 123 · PROJECT UPDATE</div>
+              <div style={{ fontFamily: FONTS.display, fontSize: 16, fontWeight: 700 }}>NATIONWIDE PAVING USA · PROJECT UPDATE</div>
               <div style={{ fontSize: 12, marginTop: 2, opacity: 0.8 }}>{new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</div>
             </div>
             {/* Update Body */}
@@ -1462,7 +1462,7 @@ const MessagesView = ({ isMobile }) => {
               </div>
             </div>
             <div style={{ padding: "12px 20px", borderTop: `1px solid ${COLORS.border}`, fontSize: 10, color: COLORS.textMuted, textAlign: "center" }}>
-              Paving 123 · Licensed & Insured · paving123.com
+              Nationwide Paving USA · Licensed & Insured · nationwidepavingusa.com
             </div>
           </div>
           <div style={{ display: "flex", gap: 8 }}>
@@ -3256,7 +3256,7 @@ const IntegrationsView = ({ isMobile }) => {
             </div>
             <h2 style={{ fontFamily: FONTS.display, fontSize: 22, fontWeight: 600, marginBottom: 8 }}>Connect {service.name}</h2>
             <p style={{ color: COLORS.textSecondary, fontSize: 14, maxWidth: 400, margin: "0 auto 8px", lineHeight: 1.5 }}>
-              Authorize Paving 123 to access your {service.id === "gmail" ? "Google" : "Microsoft"} account for email and calendar integration.
+              Authorize Nationwide Paving USA to access your {service.id === "gmail" ? "Google" : "Microsoft"} account for email and calendar integration.
             </p>
             <p style={{ color: COLORS.textMuted, fontSize: 12, marginBottom: 24 }}>
               OAuth 2.0 — Your credentials are never stored
@@ -3502,7 +3502,7 @@ const IntegrationsView = ({ isMobile }) => {
                 {[
                   { label: "Client ID", value: "••••••••-••••-••••-••••-••••••a3f8d2" },
                   { label: "Tenant ID", value: "••••••••-••••-••••-••••-••••••7b1e09" },
-                  { label: "Redirect URI", value: "https://app.paving123.com/auth/microsoft/callback" },
+                  { label: "Redirect URI", value: "https://app.nationwidepavingusa.com/auth/microsoft/callback" },
                   { label: "API Endpoint", value: "https://graph.microsoft.com/v1.0" },
                 ].map(item => (
                   <div key={item.label} style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: `1px solid color-mix(in srgb, ${COLORS.border} 3%, transparent)` }}>
@@ -3518,7 +3518,7 @@ const IntegrationsView = ({ isMobile }) => {
                 {[
                   { label: "Client ID", value: "Not configured" },
                   { label: "Client Secret", value: "Not configured" },
-                  { label: "Redirect URI", value: "https://app.paving123.com/auth/google/callback" },
+                  { label: "Redirect URI", value: "https://app.nationwidepavingusa.com/auth/google/callback" },
                   { label: "API Endpoint", value: "https://gmail.googleapis.com/gmail/v1" },
                 ].map(item => (
                   <div key={item.label} style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: `1px solid color-mix(in srgb, ${COLORS.border} 3%, transparent)` }}>
@@ -3713,7 +3713,7 @@ export default function App() {
                   width: 28, height: 28, borderRadius: 7, background: `linear-gradient(135deg, ${COLORS.accent}, ${COLORS.accentDark})`,
                   display: "flex", alignItems: "center", justifyContent: "center", fontFamily: FONTS.display,
                   fontWeight: 800, fontSize: 12, color: "#000", flexShrink: 0,
-                }}>P</div>
+                }}>NP</div>
                 <span style={{ fontFamily: FONTS.display, fontWeight: 600, fontSize: 15 }}>{tabLabels[activeTab]}</span>
               </div>
               <ThemeToggle compact />

@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback, useRef, useMemo, createContext, useCo
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png",
@@ -171,16 +170,6 @@ const CONTACTS = [
   { id: 203, name: "SafetyFirst Rentals", role: "Equipment & Safety", type: "vendor", avatar: "SF", status: "active", phone: "614-555-0999", email: "sales@safetyfirst.com" },
 ];
 
-const CONTACTS = [
-  ...EMPLOYEES.map(e => ({ ...e, type: "employee" })),
-  { id: 101, name: "Mr. Johnson", role: "Homeowner", type: "client", avatar: "MJ", status: "active", phone: "317-555-0333", project: "P-1001" },
-  { id: 102, name: "Linda Park", role: "Property Manager", type: "client", avatar: "LP", status: "active", phone: "614-555-0444", project: "P-1002", company: "Oak Park Shopping Center" },
-  { id: 103, name: "James Howard", role: "HOA President", type: "client", avatar: "JH", status: "active", phone: "937-555-0321", project: "P-1003", company: "Maple Grove HOA" },
-  { id: 104, name: "Dave Muller", role: "DOT Project Mgr", type: "client", avatar: "DM", status: "active", phone: "317-555-0111", project: "P-1004", company: "Marion County DOT" },
-  { id: 201, name: "Martin Supply Co.", role: "Asphalt & Aggregate", type: "vendor", avatar: "MS", status: "active", phone: "317-555-0777", email: "orders@martinsupply.com" },
-  { id: 202, name: "Midwest Sealcoat", role: "Sealcoat & Coatings", type: "vendor", avatar: "MW", status: "active", phone: "317-555-0888", email: "dispatch@mwseal.com" },
-  { id: 203, name: "SafetyFirst Rentals", role: "Equipment & Safety", type: "vendor", avatar: "SF", status: "active", phone: "614-555-0999", email: "sales@safetyfirst.com" },
-];
 
 const MESSAGES = [
   { id: 1, channel: "alpha-crew", user: "Marcus Rivera", avatar: "MR", text: "On site at Elm Street. Setting up for edge forms today.", time: "7:42 AM", project: "P-1001" },
@@ -2273,25 +2262,11 @@ const COST_REFERENCE = [
 ];
 
 
-// ─── PAVING COST REFERENCE ───────────────────────────────
-const COST_REFERENCE = [
-  { keyword: "hma", material: "Hot Mix Asphalt", costPer: 85, unit: "ton", coversSqft: 80, depth: '2"', note: "$10,625 covers ~10,000 sqft" },
-  { keyword: "surface course", material: "HMA Surface Course", costPer: 85, unit: "ton", coversSqft: 110, depth: '1.5"', note: "" },
-  { keyword: "sealcoat", material: "Sealcoat", costPer: 3.75, unit: "gallon", coversSqft: 50, depth: "surface", note: "$0.075/sqft material cost" },
-  { keyword: "aggregate", material: "Crushed Aggregate Base", costPer: 28, unit: "ton", coversSqft: 100, depth: '4"', note: "" },
-  { keyword: "tack coat", material: "Tack Coat Emulsion", costPer: 4.50, unit: "gallon", coversSqft: 55, depth: "bond", note: "" },
-  { keyword: "cold patch", material: "Cold Patch", costPer: 12, unit: "bag", coversSqft: 4, depth: '2"', note: "Quick-set pothole fill" },
-  { keyword: "crack filler", material: "Crack Filler", costPer: 18, unit: "gallon", coversSqft: 30, depth: "fill", note: "" },
-  { keyword: "striping", material: "Striping Paint", costPer: 32, unit: "gallon", coversSqft: 400, depth: "line-ft", note: "~400 linear ft per gallon" },
-  { keyword: "edge form", material: "Edge Forms (10ft)", costPer: 22, unit: "piece", coversSqft: 10, depth: "linear-ft", note: "" },
-];
-
 // ─── ESTIMATES & BILLING VIEW ────────────────────────────
 const EstimatesView = ({ isMobile }) => {
   const [tab, setTab] = useState("estimates");
   const [showCreate, setShowCreate] = useState(false);
   const [newEst, setNewEst] = useState({ client: "", project: "", items: [{ desc: "", qty: 1, rate: 0 }] });
-  const [sendingEst, setSendingEst] = useState(null);
   const [sendingEst, setSendingEst] = useState(null);
 
   const addItem = () => setNewEst(prev => ({ ...prev, items: [...prev.items, { desc: "", qty: 1, rate: 0 }] }));

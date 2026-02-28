@@ -8,5 +8,12 @@ export default defineConfig({
     port: 5000,
     allowedHosts: true,
     strictPort: true,
+    proxy: {
+      '/socket.io': {
+        target: 'http://localhost:3001',
+        ws: true,
+        changeOrigin: true,
+      },
+    },
   }
 })

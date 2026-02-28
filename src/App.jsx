@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef, useMemo, createContext, useContext } from "react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { WalkieTalkiePanel, WalkieTalkieFAB } from "./WalkieTalkie.jsx";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 delete L.Icon.Default.prototype._getIconUrl;
@@ -99,6 +100,10 @@ const COMMAND_TARGETS = [
   {
     id: "integrations", label: "Integrations",
     phrases: ["integration", "integrations", "email", "calendar", "outlook", "gmail", "phone number", "phone numbers", "twilio", "connect", "setup", "settings", "config", "configure", "api"],
+  },
+  {
+    id: "radio", label: "Radio",
+    phrases: ["radio", "walkie talkie", "walkie", "push to talk", "ptt", "talk to crew", "talk to team", "broadcast", "transmit", "two way", "nextel", "intercom"],
   },
 ];
 
@@ -710,6 +715,7 @@ const Icon = ({ name, size = 20, color = "currentColor" }) => {
     shield: <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/>,
     stripe: <path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445 1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921-6.99-2.109l-.9 5.555C5.175 22.99 8.385 24 11.714 24c2.641 0 4.843-.624 6.328-1.813 1.664-1.305 2.525-3.236 2.525-5.732 0-4.128-2.524-5.851-6.591-7.305z" />,
     fuel: <path d="M19.77 7.23l.01-.01-3.72-3.72L15 4.56l2.11 2.11c-.94.36-1.61 1.26-1.61 2.33 0 1.38 1.12 2.5 2.5 2.5.36 0 .69-.08 1-.21v7.21c0 .55-.45 1-1 1s-1-.45-1-1V14c0-1.1-.9-2-2-2h-1V5c0-1.1-.9-2-2-2H6c-1.1 0-2 .9-2 2v16h10v-7.5h1.5v5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V9c0-.69-.28-1.32-.73-1.77zM12 10H6V5h6v5z" />,
+    radio: <><path d="M20 15.5c-1.25 0-2.45-.2-3.57-.57a1.02 1.02 0 0 0-1.02.24l-2.2 2.2a15.045 15.045 0 0 1-6.59-6.59l2.2-2.21a.96.96 0 0 0 .25-1A11.36 11.36 0 0 1 8.5 4c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1 0 9.39 7.61 17 17 17 .55 0 1-.45 1-1v-3.5c0-.55-.45-1-1-1z"/><path d="M12 3v10l3-3h6V3h-9z"/></>,
   };
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill={color} xmlns="http://www.w3.org/2000/svg">
@@ -935,6 +941,7 @@ const Sidebar = ({ activeTab, setActiveTab, collapsed, setCollapsed }) => {
     { id: "home", icon: "home", label: "Home" },
     { id: "command", icon: "analytics", label: "Command Center" },
     { id: "messages", icon: "messages", label: "Comms Hub", badge: 3 },
+    { id: "radio", icon: "radio", label: "Radio" },
     { id: "projects", icon: "projects", label: "Job Board" },
     { id: "projectmap", icon: "mapview", label: "Project Map" },
     { id: "estimates", icon: "dollar", label: "Financial Ops" },
@@ -3748,6 +3755,7 @@ export default function App() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [isDark, setIsDark] = useState(true);
   const [fontScale, setFontScale] = useState(1);
+  const [radioFabOpen, setRadioFabOpen] = useState(false);
   const isMobile = useIsMobile();
 
   const toggleTheme = useCallback(() => setIsDark(prev => !prev), []);
@@ -3772,6 +3780,7 @@ export default function App() {
       case "home": return <HomeView setActiveTab={handleNav} setSelectedProject={setSelectedProject} {...props} />;
       case "command": return <DashboardView setActiveTab={handleNav} setSelectedProject={setSelectedProject} {...props} />;
       case "messages": return <MessagesView {...props} />;
+      case "radio": return <div style={{ height: "100vh", overflowY: "auto" }}><WalkieTalkiePanel /></div>;
       case "projects": return <ProjectsView selectedProject={selectedProject} setSelectedProject={setSelectedProject} {...props} />;
       case "projectmap": return <ProjectMapView {...props} />;
       case "estimates": return <EstimatesView {...props} />;
@@ -3785,7 +3794,7 @@ export default function App() {
     }
   };
 
-  const tabLabels = { home: "Home", command: "Command Center", messages: "Comms Hub", projects: "Job Board", projectmap: "Project Map", estimates: "Financial Ops", inventory: "Materials", tracking: "Fleet & Crew", analytics: "Analytics", knowledge: "Knowledge Base", leads: "Lead Intel", integrations: "Integrations" };
+  const tabLabels = { home: "Home", command: "Command Center", messages: "Comms Hub", radio: "Radio", projects: "Job Board", projectmap: "Project Map", estimates: "Financial Ops", inventory: "Materials", tracking: "Fleet & Crew", analytics: "Analytics", knowledge: "Knowledge Base", leads: "Lead Intel", integrations: "Integrations" };
 
   return (
     <ThemeContext.Provider value={{ isDark, toggle: toggleTheme }}>
@@ -3844,7 +3853,7 @@ export default function App() {
           </main>
         </div>
       </div>
-      {/* Voice Assistant FAB */}
+      {activeTab !== "radio" && <WalkieTalkieFAB isOpen={radioFabOpen} onToggle={() => setRadioFabOpen(prev => !prev)} />}
       <VoiceAssistantFAB onCommand={handleNav} isMobile={isMobile} />
     </FontScaleContext.Provider>
     </ThemeContext.Provider>

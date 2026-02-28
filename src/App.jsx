@@ -50,6 +50,88 @@ const FONTS = {
   mono: "'JetBrains Mono', monospace",
 };
 
+// ─── FUZZY COMMAND MATCHER ────────────────────────────────
+const COMMAND_TARGETS = [
+  {
+    id: "home", label: "Home",
+    phrases: ["home", "start", "main", "landing", "beginning", "go back", "jane", "hey jane", "hello", "hi"],
+  },
+  {
+    id: "command", label: "Command Center",
+    phrases: ["command", "dashboard", "overview", "summary", "weather", "today", "status", "whats going on", "what's going on", "control", "headquarters", "hq", "briefing"],
+  },
+  {
+    id: "messages", label: "Comms Hub",
+    phrases: ["message", "messages", "text", "send", "chat", "comms", "communication", "talk", "reach out", "contact", "call", "notify", "dm", "conversation", "inbox", "write to", "get ahold", "get a hold"],
+  },
+  {
+    id: "projects", label: "Job Board",
+    phrases: ["project", "projects", "job", "jobs", "board", "task", "tasks", "assignment", "work", "working on", "outstanding", "in progress", "active project", "current project", "ongoing", "open project", "site", "sites", "jobsite", "job site"],
+  },
+  {
+    id: "projectmap", label: "Project Map",
+    phrases: ["map", "location", "locations", "where", "gps", "satellite", "geographic"],
+  },
+  {
+    id: "estimates", label: "Financial Ops",
+    phrases: ["estimate", "estimates", "quote", "quotes", "bid", "bids", "invoice", "invoices", "bill", "bills", "financial", "finance", "money", "payment", "payments", "revenue", "cost", "costs", "pricing", "price", "budget", "accounting", "owe", "paid", "pay", "profit", "how much", "what do we owe", "billing"],
+  },
+  {
+    id: "inventory", label: "Materials",
+    phrases: ["inventory", "material", "materials", "supply", "supplies", "asphalt", "stock", "warehouse", "equipment", "tools", "parts", "what do we have", "stuff", "resources", "aggregate", "sealcoat", "concrete", "patch", "items"],
+  },
+  {
+    id: "tracking", label: "Fleet & Crew",
+    phrases: ["fleet", "crew", "truck", "trucks", "vehicle", "vehicles", "driver", "drivers", "track", "tracking", "who", "team", "people", "staff", "employee", "employees", "workers", "guys", "personnel", "on site", "roller", "paver", "dump truck", "skid steer", "pickup"],
+  },
+  {
+    id: "analytics", label: "Analytics",
+    phrases: ["analytics", "analytic", "report", "reports", "chart", "charts", "graph", "graphs", "data", "numbers", "performance", "metrics", "stats", "statistics", "trends", "kpi"],
+  },
+  {
+    id: "knowledge", label: "Knowledge Base",
+    phrases: ["knowledge", "wiki", "training", "safety", "guide", "guides", "documentation", "docs", "manual", "procedure", "procedures", "how to", "best practice", "sop", "learn", "info", "information", "reference"],
+  },
+  {
+    id: "leads", label: "Lead Intel",
+    phrases: ["lead", "leads", "opportunity", "opportunities", "prospect", "prospects", "bond", "bonds", "rfp", "permit", "permits", "new business", "pipeline", "incoming", "potential", "bid opportunity"],
+  },
+  {
+    id: "integrations", label: "Integrations",
+    phrases: ["integration", "integrations", "email", "calendar", "outlook", "gmail", "phone number", "phone numbers", "twilio", "connect", "setup", "settings", "config", "configure", "api"],
+  },
+];
+
+const matchCommand = (text) => {
+  const t = text.toLowerCase().replace(/[^\w\s]/g, "");
+  const words = t.split(/\s+/);
+
+  let bestId = null;
+  let bestScore = 0;
+
+  for (const target of COMMAND_TARGETS) {
+    let score = 0;
+    for (const phrase of target.phrases) {
+      if (phrase.includes(" ")) {
+        if (t.includes(phrase)) score += 3;
+      } else {
+        if (words.includes(phrase)) score += 2;
+      }
+    }
+    if (score > bestScore) {
+      bestScore = score;
+      bestId = target.id;
+    }
+  }
+
+  if (!bestId || bestScore < 2) {
+    return { id: null, label: null, score: bestScore };
+  }
+
+  const label = COMMAND_TARGETS.find(c => c.id === bestId)?.label || "Home";
+  return { id: bestId, label, score: bestScore };
+};
+
 // ─── MOCK DATA ────────────────────────────────────────────
 const EMPLOYEES = [
   { id: 1, name: "Marcus Rivera", role: "Crew Lead", crew: "Alpha", avatar: "MR", status: "active", phone: "317-555-0142" },
@@ -983,30 +1065,14 @@ const HomeView = ({ setActiveTab, setSelectedProject, isMobile }) => {
   ];
 
   const parseCommand = (text) => {
-    const t = text.toLowerCase();
-    if (t.includes("text") || t.includes("message") || t.includes("send")) {
-      setActiveTab("messages"); return;
+    const result = matchCommand(text);
+    if (result.id) {
+      setActiveTab(result.id);
+      setShowResult(`Navigating to ${result.label}`);
+    } else {
+      setShowResult(`I heard: "${text}" — could you try rephrasing that?`);
     }
-    if (t.includes("project") && (t.includes("active") || t.includes("open") || t.includes("current"))) {
-      setActiveTab("projects"); return;
-    }
-    if (t.includes("map")) { setActiveTab("projectmap"); return; }
-    if (t.includes("estimate") || t.includes("quote") || t.includes("bid") || t.includes("bill") || t.includes("invoice")) {
-      setActiveTab("estimates"); return;
-    }
-    if (t.includes("crew") || t.includes("fleet") || t.includes("truck") || t.includes("who")) {
-      setActiveTab("tracking"); return;
-    }
-    if (t.includes("lead") || t.includes("opportunity") || t.includes("bond")) {
-      setActiveTab("leads"); return;
-    }
-    if (t.includes("inventory") || t.includes("material") || t.includes("asphalt") || t.includes("supply")) {
-      setActiveTab("inventory"); return;
-    }
-    if (t.includes("email") || t.includes("calendar") || t.includes("integration") || t.includes("phone number")) {
-      setActiveTab("integrations"); return;
-    }
-    setShowResult(`I heard: "${text}". Try saying something like "text Marcus" or "open active projects".`);
+    setTimeout(() => setShowResult(null), 3000);
   };
 
   const handleSubmit = () => {
@@ -3627,25 +3693,16 @@ const VoiceAssistantFAB = ({ onCommand, isMobile }) => {
     recognition.lang = "en-US";
     recognition.onstart = () => setListening(true);
     recognition.onresult = (event) => {
-      const t = event.results[0][0].transcript.toLowerCase();
-      setLastHeard(t);
+      const transcript = event.results[0][0].transcript;
+      const result = matchCommand(transcript);
+      if (result.id) {
+        setLastHeard(`${transcript} → ${result.label}`);
+        onCommand(result.id);
+      } else {
+        setLastHeard(`"${transcript}" — try rephrasing`);
+      }
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
-      if (t.includes("text") || t.includes("message")) onCommand("messages");
-      else if (t.includes("project") && !t.includes("map")) onCommand("projects");
-      else if (t.includes("map")) onCommand("projectmap");
-      else if (t.includes("estimate") || t.includes("bill") || t.includes("invoice")) onCommand("estimates");
-      else if (t.includes("crew") || t.includes("fleet")) onCommand("tracking");
-      else if (t.includes("lead") || t.includes("bid")) onCommand("leads");
-      else if (t.includes("inventory") || t.includes("material")) onCommand("inventory");
-      else if (t.includes("home") || t.includes("jane")) onCommand("home");
-      else if (t.includes("analytics") || t.includes("report") || t.includes("revenue")) onCommand("analytics");
-      else if (t.includes("knowledge") || t.includes("wiki") || t.includes("training") || t.includes("safety")) onCommand("knowledge");
-      else if (t.includes("command") || t.includes("dashboard") || t.includes("weather")) onCommand("command");
-      else if (t.includes("analytics") || t.includes("report")) onCommand("analytics");
-      else if (t.includes("knowledge") || t.includes("wiki") || t.includes("safety")) onCommand("knowledge");
-      else if (t.includes("command") || t.includes("dashboard") || t.includes("weather")) onCommand("command");
-      else if (t.includes("setting") || t.includes("integration") || t.includes("phone")) onCommand("integrations");
     };
     recognition.onerror = () => setListening(false);
     recognition.onend = () => setListening(false);

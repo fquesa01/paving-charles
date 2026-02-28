@@ -36,11 +36,17 @@ export function useWalkieTalkie() {
   const [talking, setTalking] = useState(false);
   const [talkers, setTalkers] = useState({});
   const [micAllowed, setMicAllowed] = useState(null);
+  const [transcripts, setTranscripts] = useState([]);
+  const [liveTranscript, setLiveTranscript] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
 
   const socketRef = useRef(null);
   const streamRef = useRef(null);
   const peersRef = useRef({});
   const audioElemsRef = useRef({});
+  const recognitionRef = useRef(null);
+  const talkStartRef = useRef(null);
+  const finalTranscriptRef = useRef("");
 
   const userName = "Sarah Chen";
   const userAvatar = "SC";
@@ -68,6 +74,18 @@ export function useWalkieTalkie() {
         else delete next[socketId];
         return next;
       });
+    });
+
+    socket.on("transcript", (entry) => {
+      setTranscripts(prev => [...prev.slice(-99), entry]);
+    });
+
+    socket.on("checklist-suggestion", (suggestion) => {
+      setSuggestions(prev => [...prev, { ...suggestion, id: Date.now() + Math.random() }]);
+    });
+
+    socket.on("checklist-action-confirmed", (action) => {
+      setSuggestions(prev => prev.filter(s => s.radioLogId !== action.radio_log_id));
     });
 
     socket.on("signal", async ({ from, signal }) => {
@@ -158,10 +176,25 @@ export function useWalkieTalkie() {
     audioElemsRef.current = {};
     setTalkers({});
     setTalking(false);
+    setTranscripts([]);
+    setSuggestions([]);
 
     setChannel(newChannel);
     if (socketRef.current?.connected) {
       socketRef.current.emit("join-channel", { channel: newChannel, user: { name: userName, avatar: userAvatar } });
+
+      fetch(`/api/radio-logs?channel=${newChannel}`)
+        .then(r => r.ok ? r.json() : [])
+        .then(logs => {
+          setTranscripts(logs.map(l => ({
+            id: l.id,
+            channel: l.channel,
+            userName: l.user_name,
+            transcript: l.transcript,
+            createdAt: l.created_at,
+          })));
+        })
+        .catch(() => {});
     }
   }, []);
 
@@ -169,6 +202,9 @@ export function useWalkieTalkie() {
     if (!streamRef.current) return;
     streamRef.current.getAudioTracks().forEach(t => { t.enabled = true; });
     setTalking(true);
+    setLiveTranscript("");
+    finalTranscriptRef.current = "";
+    talkStartRef.current = Date.now();
     socketRef.current?.emit("talking-start");
 
     users.forEach(u => {
@@ -176,6 +212,33 @@ export function useWalkieTalkie() {
         createPeer(u.socketId, true);
       }
     });
+
+    try {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = "en-US";
+
+        recognition.onresult = (event) => {
+          let accumulated = "";
+          let interim = "";
+          for (let i = 0; i < event.results.length; i++) {
+            const t = event.results[i][0].transcript;
+            if (event.results[i].isFinal) accumulated += t + " ";
+            else interim += t;
+          }
+          const display = (accumulated + interim).trim();
+          finalTranscriptRef.current = accumulated.trim();
+          setLiveTranscript(display);
+        };
+
+        recognition.onerror = () => {};
+        recognition.start();
+        recognitionRef.current = recognition;
+      }
+    } catch {}
   }, [users, createPeer]);
 
   const stopTalking = useCallback(() => {
@@ -183,6 +246,36 @@ export function useWalkieTalkie() {
     streamRef.current.getAudioTracks().forEach(t => { t.enabled = false; });
     setTalking(false);
     socketRef.current?.emit("talking-stop");
+
+    const durationSec = talkStartRef.current ? (Date.now() - talkStartRef.current) / 1000 : 0;
+    talkStartRef.current = null;
+
+    if (recognitionRef.current) {
+      recognitionRef.current.onend = () => {};
+      recognitionRef.current.stop();
+
+      const transcript = finalTranscriptRef.current || liveTranscript;
+      finalTranscriptRef.current = "";
+      if (transcript && transcript.trim() && socketRef.current) {
+        socketRef.current.emit("radio-transcript", {
+          channel,
+          userName,
+          transcript: transcript.trim(),
+          durationSec,
+        });
+      }
+      recognitionRef.current = null;
+    }
+    setLiveTranscript("");
+  }, [channel, liveTranscript]);
+
+  const confirmSuggestion = useCallback(({ radioLogId, projectId, actionType, itemText }) => {
+    socketRef.current?.emit("checklist-confirm", { radioLogId, projectId, actionType, itemText });
+    setSuggestions(prev => prev.filter(s => s.radioLogId !== radioLogId));
+  }, []);
+
+  const dismissSuggestion = useCallback((radioLogId) => {
+    setSuggestions(prev => prev.filter(s => s.radioLogId !== radioLogId));
   }, []);
 
   const disconnect = useCallback(() => {
@@ -194,12 +287,19 @@ export function useWalkieTalkie() {
       streamRef.current.getTracks().forEach(t => t.stop());
       streamRef.current = null;
     }
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+      recognitionRef.current = null;
+    }
     socketRef.current?.disconnect();
     socketRef.current = null;
     setConnected(false);
     setUsers([]);
     setTalkers({});
     setTalking(false);
+    setTranscripts([]);
+    setSuggestions([]);
+    setLiveTranscript("");
   }, []);
 
   useEffect(() => {
@@ -210,21 +310,36 @@ export function useWalkieTalkie() {
 
   return {
     channel, connected, users, talking, talkers, micAllowed,
+    transcripts, liveTranscript, suggestions,
     connectSocket, initMic, switchChannel, startTalking, stopTalking, disconnect,
-    RADIO_CHANNELS,
+    confirmSuggestion, dismissSuggestion,
+    RADIO_CHANNELS, socketRef,
   };
 }
 
-export function WalkieTalkiePanel({ compact = false }) {
+function formatTime(dateStr) {
+  if (!dateStr) return "";
+  const d = new Date(dateStr);
+  return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
+export function WalkieTalkiePanel({ compact = false, onChecklistAction }) {
   const {
     channel, connected, users, talking, talkers, micAllowed,
+    transcripts, liveTranscript, suggestions,
     connectSocket, initMic, switchChannel, startTalking, stopTalking,
+    confirmSuggestion, dismissSuggestion,
     RADIO_CHANNELS,
   } = useWalkieTalkie();
 
   const [joining, setJoining] = useState(false);
   const activeTalkers = Object.values(talkers);
   const channelInfo = RADIO_CHANNELS.find(c => c.id === channel);
+  const logEndRef = useRef(null);
+
+  useEffect(() => {
+    logEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [transcripts.length]);
 
   const handleConnect = async () => {
     setJoining(true);
@@ -243,6 +358,23 @@ export function WalkieTalkiePanel({ compact = false }) {
   const handlePTTUp = (e) => {
     e.preventDefault();
     stopTalking();
+  };
+
+  const handleConfirmSuggestion = (suggestion, actionType) => {
+    confirmSuggestion({
+      radioLogId: suggestion.radioLogId,
+      projectId: null,
+      actionType,
+      itemText: suggestion.suggestedText || suggestion.transcript,
+    });
+    if (onChecklistAction) {
+      onChecklistAction({
+        actionType,
+        itemText: suggestion.suggestedText || suggestion.transcript,
+        userName: suggestion.userName,
+        radioLogId: suggestion.radioLogId,
+      });
+    }
   };
 
   if (!connected) {
@@ -314,144 +446,257 @@ export function WalkieTalkiePanel({ compact = false }) {
 
   return (
     <div style={{
-      display: "flex", flexDirection: "column", alignItems: "center",
-      height: compact ? "auto" : "100%", padding: compact ? 16 : 32,
+      display: "flex", flexDirection: compact ? "column" : "row",
+      height: compact ? "auto" : "100%", padding: compact ? 16 : 0,
+      gap: compact ? 0 : 0,
     }}>
       <div style={{
-        display: "flex", alignItems: "center", gap: 12, marginBottom: compact ? 16 : 24,
-        padding: "10px 20px", borderRadius: 12, background: COLORS.surface,
-        border: `1px solid ${COLORS.border}`,
+        display: "flex", flexDirection: "column", alignItems: "center",
+        flex: compact ? undefined : "0 0 400px",
+        padding: compact ? 0 : 32,
+        borderRight: compact ? "none" : `1px solid ${COLORS.border}`,
       }}>
         <div style={{
-          width: 10, height: 10, borderRadius: "50%",
-          background: COLORS.success,
-          boxShadow: `0 0 8px ${COLORS.success}`,
-          animation: "pulse 2s infinite",
-        }} />
-        <span style={{ fontFamily: FONTS.display, fontSize: 14, fontWeight: 600 }}>
-          {channelInfo?.name}
-        </span>
-        <span style={{ fontSize: 12, color: COLORS.textMuted }}>
-          · {users.length + 1} online
-        </span>
-      </div>
-
-      {!compact && (
-        <div style={{ display: "flex", gap: 6, marginBottom: 24, flexWrap: "wrap", justifyContent: "center" }}>
-          {RADIO_CHANNELS.map(ch => (
-            <button key={ch.id} onClick={() => switchChannel(ch.id)} style={{
-              padding: "6px 14px", borderRadius: 8,
-              border: `1px solid ${channel === ch.id ? COLORS.accent : COLORS.border}`,
-              background: channel === ch.id ? `${COLORS.accent}20` : "transparent",
-              color: channel === ch.id ? COLORS.accent : COLORS.textMuted,
-              cursor: "pointer", fontFamily: FONTS.body, fontSize: 12, fontWeight: 600,
-              transition: "all 0.2s",
-            }}>
-              {ch.name}
-            </button>
-          ))}
-        </div>
-      )}
-
-      <div style={{ flex: compact ? undefined : 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: compact ? 16 : 24 }}>
-        {activeTalkers.length > 0 && (
+          display: "flex", alignItems: "center", gap: 12, marginBottom: compact ? 16 : 24,
+          padding: "10px 20px", borderRadius: 12, background: COLORS.surface,
+          border: `1px solid ${COLORS.border}`,
+        }}>
           <div style={{
-            display: "flex", flexDirection: "column", alignItems: "center", gap: 8,
-            animation: "fadeIn 0.3s ease-out",
-          }}>
-            <div style={{ fontSize: 10, fontFamily: FONTS.mono, color: COLORS.textMuted, letterSpacing: 1, textTransform: "uppercase" }}>
-              SPEAKING
-            </div>
-            {activeTalkers.map((name, i) => (
-              <div key={i} style={{
-                padding: "8px 20px", borderRadius: 10, background: `${COLORS.success}20`,
-                border: `1px solid ${COLORS.success}40`, color: COLORS.success,
-                fontFamily: FONTS.display, fontSize: 16, fontWeight: 600,
-                animation: "pulse 1.5s infinite",
+            width: 10, height: 10, borderRadius: "50%",
+            background: COLORS.success,
+            boxShadow: `0 0 8px ${COLORS.success}`,
+            animation: "pulse 2s infinite",
+          }} />
+          <span style={{ fontFamily: FONTS.display, fontSize: 14, fontWeight: 600 }}>
+            {channelInfo?.name}
+          </span>
+          <span style={{ fontSize: 12, color: COLORS.textMuted }}>
+            · {users.length + 1} online
+          </span>
+        </div>
+
+        {!compact && (
+          <div style={{ display: "flex", gap: 6, marginBottom: 24, flexWrap: "wrap", justifyContent: "center" }}>
+            {RADIO_CHANNELS.map(ch => (
+              <button key={ch.id} onClick={() => switchChannel(ch.id)} style={{
+                padding: "6px 14px", borderRadius: 8,
+                border: `1px solid ${channel === ch.id ? COLORS.accent : COLORS.border}`,
+                background: channel === ch.id ? `${COLORS.accent}20` : "transparent",
+                color: channel === ch.id ? COLORS.accent : COLORS.textMuted,
+                cursor: "pointer", fontFamily: FONTS.body, fontSize: 12, fontWeight: 600,
+                transition: "all 0.2s",
               }}>
-                {name}
-              </div>
+                {ch.name}
+              </button>
             ))}
           </div>
         )}
 
-        <button
-          onMouseDown={handlePTTDown} onMouseUp={handlePTTUp} onMouseLeave={handlePTTUp}
-          onTouchStart={handlePTTDown} onTouchEnd={handlePTTUp} onTouchCancel={handlePTTUp}
-          style={{
-            width: compact ? 100 : 160, height: compact ? 100 : 160, borderRadius: "50%",
-            border: `4px solid ${talking ? COLORS.danger : COLORS.accent}`,
-            background: talking
-              ? `radial-gradient(circle, ${COLORS.danger}40, ${COLORS.danger}15)`
-              : `radial-gradient(circle, ${COLORS.accent}25, transparent)`,
-            cursor: "pointer", display: "flex", flexDirection: "column",
-            alignItems: "center", justifyContent: "center", gap: 4,
-            transition: "all 0.15s", userSelect: "none", WebkitUserSelect: "none",
-            boxShadow: talking ? `0 0 40px ${COLORS.danger}40` : `0 0 30px ${COLORS.accent}20`,
-            animation: talking ? "pulse 1s infinite" : "none",
-          }}
-        >
-          <svg width={compact ? 28 : 40} height={compact ? 28 : 40} viewBox="0 0 24 24" fill={talking ? COLORS.danger : COLORS.accent}>
-            <path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/>
-          </svg>
-          <span style={{
-            fontFamily: FONTS.display, fontSize: compact ? 10 : 13,
-            fontWeight: 700, letterSpacing: 1,
-            color: talking ? COLORS.danger : COLORS.accent,
-          }}>
-            {talking ? "LIVE" : "HOLD TO TALK"}
-          </span>
-        </button>
-
-        {!compact && !talking && activeTalkers.length === 0 && (
-          <p style={{ color: COLORS.textMuted, fontSize: 13, textAlign: "center", maxWidth: 260 }}>
-            Press and hold the button to talk to everyone on this channel
-          </p>
-        )}
-      </div>
-
-      {!compact && (
-        <div style={{ width: "100%", maxWidth: 360, marginTop: 24 }}>
-          <div style={{ fontSize: 10, fontFamily: FONTS.mono, color: COLORS.textMuted, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>
-            ON THIS CHANNEL
-          </div>
-          <div style={{
-            background: COLORS.surface, borderRadius: 12, border: `1px solid ${COLORS.border}`,
-            overflow: "hidden",
-          }}>
+        <div style={{ flex: compact ? undefined : 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: compact ? 16 : 24 }}>
+          {activeTalkers.length > 0 && (
             <div style={{
-              display: "flex", alignItems: "center", gap: 10, padding: "10px 14px",
-              borderBottom: users.length > 0 ? `1px solid ${COLORS.border}` : "none",
+              display: "flex", flexDirection: "column", alignItems: "center", gap: 8,
+              animation: "fadeIn 0.3s ease-out",
+            }}>
+              <div style={{ fontSize: 10, fontFamily: FONTS.mono, color: COLORS.textMuted, letterSpacing: 1, textTransform: "uppercase" }}>
+                SPEAKING
+              </div>
+              {activeTalkers.map((name, i) => (
+                <div key={i} style={{
+                  padding: "8px 20px", borderRadius: 10, background: `${COLORS.success}20`,
+                  border: `1px solid ${COLORS.success}40`, color: COLORS.success,
+                  fontFamily: FONTS.display, fontSize: 16, fontWeight: 600,
+                  animation: "pulse 1.5s infinite",
+                }}>
+                  {name}
+                </div>
+              ))}
+            </div>
+          )}
+
+          <button
+            onMouseDown={handlePTTDown} onMouseUp={handlePTTUp} onMouseLeave={handlePTTUp}
+            onTouchStart={handlePTTDown} onTouchEnd={handlePTTUp} onTouchCancel={handlePTTUp}
+            style={{
+              width: compact ? 100 : 160, height: compact ? 100 : 160, borderRadius: "50%",
+              border: `4px solid ${talking ? COLORS.danger : COLORS.accent}`,
+              background: talking
+                ? `radial-gradient(circle, ${COLORS.danger}40, ${COLORS.danger}15)`
+                : `radial-gradient(circle, ${COLORS.accent}25, transparent)`,
+              cursor: "pointer", display: "flex", flexDirection: "column",
+              alignItems: "center", justifyContent: "center", gap: 4,
+              transition: "all 0.15s", userSelect: "none", WebkitUserSelect: "none",
+              boxShadow: talking ? `0 0 40px ${COLORS.danger}40` : `0 0 30px ${COLORS.accent}20`,
+              animation: talking ? "pulse 1s infinite" : "none",
+            }}
+          >
+            <svg width={compact ? 28 : 40} height={compact ? 28 : 40} viewBox="0 0 24 24" fill={talking ? COLORS.danger : COLORS.accent}>
+              <path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/>
+            </svg>
+            <span style={{
+              fontFamily: FONTS.display, fontSize: compact ? 10 : 13,
+              fontWeight: 700, letterSpacing: 1,
+              color: talking ? COLORS.danger : COLORS.accent,
+            }}>
+              {talking ? "LIVE" : "HOLD TO TALK"}
+            </span>
+          </button>
+
+          {talking && liveTranscript && (
+            <div style={{
+              padding: "8px 16px", borderRadius: 10,
+              background: `${COLORS.danger}15`, border: `1px solid ${COLORS.danger}30`,
+              maxWidth: 320, textAlign: "center",
+            }}>
+              <div style={{ fontSize: 9, fontFamily: FONTS.mono, color: COLORS.danger, letterSpacing: 1, marginBottom: 4 }}>TRANSCRIBING</div>
+              <span style={{ fontSize: 13, color: COLORS.text, fontStyle: "italic" }}>"{liveTranscript}"</span>
+            </div>
+          )}
+
+          {!compact && !talking && activeTalkers.length === 0 && (
+            <p style={{ color: COLORS.textMuted, fontSize: 13, textAlign: "center", maxWidth: 260 }}>
+              Press and hold the button to talk to everyone on this channel
+            </p>
+          )}
+        </div>
+
+        {!compact && (
+          <div style={{ width: "100%", maxWidth: 360, marginTop: 24 }}>
+            <div style={{ fontSize: 10, fontFamily: FONTS.mono, color: COLORS.textMuted, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>
+              ON THIS CHANNEL
+            </div>
+            <div style={{
+              background: COLORS.surface, borderRadius: 12, border: `1px solid ${COLORS.border}`,
+              overflow: "hidden",
             }}>
               <div style={{
-                width: 28, height: 28, borderRadius: 7,
-                background: `${COLORS.success}20`, color: COLORS.success,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontFamily: FONTS.display, fontWeight: 700, fontSize: 11,
-              }}>SC</div>
-              <span style={{ fontSize: 13, fontWeight: 600 }}>You (Sarah Chen)</span>
-              {talking && <span style={{ marginLeft: "auto", fontSize: 10, color: COLORS.danger, fontFamily: FONTS.mono, fontWeight: 700 }}>TALKING</span>}
-            </div>
-            {users.map(u => (
-              <div key={u.socketId} style={{
                 display: "flex", alignItems: "center", gap: 10, padding: "10px 14px",
-                borderBottom: `1px solid ${COLORS.border}`,
+                borderBottom: users.length > 0 ? `1px solid ${COLORS.border}` : "none",
               }}>
                 <div style={{
                   width: 28, height: 28, borderRadius: 7,
-                  background: `${COLORS.accent}20`, color: COLORS.accent,
+                  background: `${COLORS.success}20`, color: COLORS.success,
                   display: "flex", alignItems: "center", justifyContent: "center",
                   fontFamily: FONTS.display, fontWeight: 700, fontSize: 11,
-                }}>{u.avatar || u.name.split(" ").map(w => w[0]).join("")}</div>
-                <span style={{ fontSize: 13, fontWeight: 500 }}>{u.name}</span>
-                {talkers[u.socketId] && <span style={{ marginLeft: "auto", fontSize: 10, color: COLORS.danger, fontFamily: FONTS.mono, fontWeight: 700, animation: "pulse 1s infinite" }}>TALKING</span>}
+                }}>SC</div>
+                <span style={{ fontSize: 13, fontWeight: 600 }}>You (Sarah Chen)</span>
+                {talking && <span style={{ marginLeft: "auto", fontSize: 10, color: COLORS.danger, fontFamily: FONTS.mono, fontWeight: 700 }}>TALKING</span>}
               </div>
-            ))}
-            {users.length === 0 && (
-              <div style={{ padding: "10px 14px", fontSize: 12, color: COLORS.textMuted, textAlign: "center" }}>
-                No other users on this channel yet
+              {users.map(u => (
+                <div key={u.socketId} style={{
+                  display: "flex", alignItems: "center", gap: 10, padding: "10px 14px",
+                  borderBottom: `1px solid ${COLORS.border}`,
+                }}>
+                  <div style={{
+                    width: 28, height: 28, borderRadius: 7,
+                    background: `${COLORS.accent}20`, color: COLORS.accent,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontFamily: FONTS.display, fontWeight: 700, fontSize: 11,
+                  }}>{u.avatar || u.name.split(" ").map(w => w[0]).join("")}</div>
+                  <span style={{ fontSize: 13, fontWeight: 500 }}>{u.name}</span>
+                  {talkers[u.socketId] && <span style={{ marginLeft: "auto", fontSize: 10, color: COLORS.danger, fontFamily: FONTS.mono, fontWeight: 700, animation: "pulse 1s infinite" }}>TALKING</span>}
+                </div>
+              ))}
+              {users.length === 0 && (
+                <div style={{ padding: "10px 14px", fontSize: 12, color: COLORS.textMuted, textAlign: "center" }}>
+                  No other users on this channel yet
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {!compact && (
+        <div style={{
+          flex: 1, display: "flex", flexDirection: "column",
+          padding: 24, minWidth: 0,
+        }}>
+          {suggestions.length > 0 && (
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ fontSize: 10, fontFamily: FONTS.mono, color: COLORS.accent, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>
+                CHECKLIST SUGGESTIONS
+              </div>
+              {suggestions.map(s => (
+                <div key={s.id} style={{
+                  padding: 14, borderRadius: 12, marginBottom: 8,
+                  background: s.actionType === "complete" ? `${COLORS.success}10` : `${COLORS.accent}10`,
+                  border: `1px solid ${s.actionType === "complete" ? COLORS.success : COLORS.accent}30`,
+                }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill={s.actionType === "complete" ? COLORS.success : COLORS.accent}>
+                      {s.actionType === "complete"
+                        ? <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                        : <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                      }
+                    </svg>
+                    <span style={{ fontSize: 11, fontFamily: FONTS.mono, fontWeight: 600, color: s.actionType === "complete" ? COLORS.success : COLORS.accent }}>
+                      {s.actionType === "complete" ? "TASK COMPLETED" : "NEW ISSUE DETECTED"}
+                    </span>
+                    <span style={{ marginLeft: "auto", fontSize: 11, color: COLORS.textMuted }}>{s.userName}</span>
+                  </div>
+                  <p style={{ fontSize: 13, color: COLORS.text, marginBottom: 10, lineHeight: 1.4 }}>
+                    "{s.transcript}"
+                  </p>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button onClick={() => handleConfirmSuggestion(s, s.actionType)} style={{
+                      padding: "6px 14px", borderRadius: 8, border: "none", cursor: "pointer",
+                      background: s.actionType === "complete" ? COLORS.success : COLORS.accent,
+                      color: s.actionType === "complete" ? "#fff" : "#000",
+                      fontFamily: FONTS.body, fontSize: 12, fontWeight: 600,
+                    }}>
+                      {s.actionType === "complete" ? "Mark Complete" : "Add to Checklist"}
+                    </button>
+                    <button onClick={() => dismissSuggestion(s.radioLogId)} style={{
+                      padding: "6px 14px", borderRadius: 8,
+                      border: `1px solid ${COLORS.border}`, background: "transparent",
+                      color: COLORS.textMuted, cursor: "pointer",
+                      fontFamily: FONTS.body, fontSize: 12,
+                    }}>
+                      Dismiss
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div style={{ fontSize: 10, fontFamily: FONTS.mono, color: COLORS.textMuted, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>
+            COMMS LOG — {channelInfo?.name}
+          </div>
+          <div style={{
+            flex: 1, overflowY: "auto", borderRadius: 12,
+            background: COLORS.surface, border: `1px solid ${COLORS.border}`,
+            padding: 2,
+          }}>
+            {transcripts.length === 0 && (
+              <div style={{ padding: 32, textAlign: "center", color: COLORS.textMuted, fontSize: 13 }}>
+                No communications yet. Hold the talk button and speak to start logging.
               </div>
             )}
+            {transcripts.map((t, i) => (
+              <div key={t.id || i} style={{
+                padding: "10px 14px",
+                borderBottom: i < transcripts.length - 1 ? `1px solid ${COLORS.border}` : "none",
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                  <div style={{
+                    width: 22, height: 22, borderRadius: 6,
+                    background: `${COLORS.accent}20`, color: COLORS.accent,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontFamily: FONTS.display, fontWeight: 700, fontSize: 9,
+                  }}>
+                    {(t.userName || "").split(" ").map(w => w[0]).join("")}
+                  </div>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: COLORS.text }}>{t.userName}</span>
+                  <span style={{ fontSize: 10, color: COLORS.textMuted, marginLeft: "auto", fontFamily: FONTS.mono }}>{formatTime(t.createdAt)}</span>
+                </div>
+                <p style={{ fontSize: 13, color: COLORS.textSecondary, lineHeight: 1.4, margin: 0, paddingLeft: 30 }}>
+                  {t.transcript}
+                </p>
+              </div>
+            ))}
+            <div ref={logEndRef} />
           </div>
         </div>
       )}

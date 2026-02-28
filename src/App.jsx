@@ -1637,7 +1637,7 @@ const MessagesView = ({ isMobile }) => {
 };
 
 // ─── PROJECTS VIEW ──────────────────────────────────────
-const ProjectsView = ({ selectedProject, setSelectedProject, isMobile }) => {
+const ProjectsView = ({ selectedProject, setSelectedProject, isMobile, radioChecklistActions = [] }) => {
   const [projects, setProjects] = useState(PROJECTS);
   const [closedProjects] = useState(CLOSED_PROJECTS);
   const [projectTab, setProjectTab] = useState("active");
@@ -1645,6 +1645,33 @@ const ProjectsView = ({ selectedProject, setSelectedProject, isMobile }) => {
   const [openStage, setOpenStage] = useState(null);
   const [newProject, setNewProject] = useState({ name: "", client: "", type: "Residential", location: "", crew: "Unassigned", budget: "", startDate: "", endDate: "" });
   const [newItem, setNewItem] = useState("");
+  const [processedActions, setProcessedActions] = useState(new Set());
+
+  useEffect(() => {
+    radioChecklistActions.forEach(action => {
+      if (processedActions.has(action.id)) return;
+      setProcessedActions(prev => new Set(prev).add(action.id));
+
+      const firstProject = projects[0];
+      if (!firstProject) return;
+
+      if (action.actionType === "add") {
+        setProjects(prev => prev.map(p =>
+          p.id === firstProject.id
+            ? { ...p, checklist: [...p.checklist, { id: p.checklist.length + 1, text: action.itemText, done: false }] }
+            : p
+        ));
+      } else if (action.actionType === "complete") {
+        const searchText = action.itemText.toLowerCase();
+        setProjects(prev => prev.map(p => {
+          if (p.id !== firstProject.id) return p;
+          const match = p.checklist.find(c => !c.done && searchText.includes(c.text.toLowerCase().split(" ").slice(0, 3).join(" ")));
+          if (!match) return p;
+          return { ...p, checklist: p.checklist.map(c => c.id === match.id ? { ...c, done: true, completedBy: action.userName || "Radio", date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" }) } : c) };
+        }));
+      }
+    });
+  }, [radioChecklistActions]);
 
   const createProject = () => {
     if (!newProject.name || !newProject.client) return;
@@ -3756,6 +3783,8 @@ export default function App() {
   const [isDark, setIsDark] = useState(true);
   const [fontScale, setFontScale] = useState(1);
   const [radioFabOpen, setRadioFabOpen] = useState(false);
+  const [radioToast, setRadioToast] = useState(null);
+  const [radioChecklistActions, setRadioChecklistActions] = useState([]);
   const isMobile = useIsMobile();
 
   const toggleTheme = useCallback(() => setIsDark(prev => !prev), []);
@@ -3774,14 +3803,21 @@ export default function App() {
     setMobileSidebarOpen(false);
   };
 
+  const handleRadioChecklistAction = useCallback((action) => {
+    setRadioChecklistActions(prev => [...prev, { ...action, id: Date.now() }]);
+    const label = action.actionType === "complete" ? "Checklist item marked complete" : "New item added to checklist";
+    setRadioToast(label);
+    setTimeout(() => setRadioToast(null), 4000);
+  }, []);
+
   const renderView = () => {
     const props = { isMobile };
     switch (activeTab) {
       case "home": return <HomeView setActiveTab={handleNav} setSelectedProject={setSelectedProject} {...props} />;
       case "command": return <DashboardView setActiveTab={handleNav} setSelectedProject={setSelectedProject} {...props} />;
       case "messages": return <MessagesView {...props} />;
-      case "radio": return <div style={{ height: "100vh", overflowY: "auto" }}><WalkieTalkiePanel /></div>;
-      case "projects": return <ProjectsView selectedProject={selectedProject} setSelectedProject={setSelectedProject} {...props} />;
+      case "radio": return <div style={{ height: "100vh", overflowY: "auto" }}><WalkieTalkiePanel onChecklistAction={handleRadioChecklistAction} /></div>;
+      case "projects": return <ProjectsView selectedProject={selectedProject} setSelectedProject={setSelectedProject} radioChecklistActions={radioChecklistActions} {...props} />;
       case "projectmap": return <ProjectMapView {...props} />;
       case "estimates": return <EstimatesView {...props} />;
       case "inventory": return <InventoryView {...props} />;
@@ -3855,6 +3891,21 @@ export default function App() {
       </div>
       {activeTab !== "radio" && <WalkieTalkieFAB isOpen={radioFabOpen} onToggle={() => setRadioFabOpen(prev => !prev)} />}
       <VoiceAssistantFAB onCommand={handleNav} isMobile={isMobile} />
+      {radioToast && (
+        <div style={{
+          position: "fixed", top: 24, left: "50%", transform: "translateX(-50%)", zIndex: 9999,
+          padding: "12px 24px", borderRadius: 12,
+          background: COLORS.surface, border: `1px solid ${COLORS.accent}`,
+          boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
+          display: "flex", alignItems: "center", gap: 10,
+          animation: "fadeIn 0.3s ease-out",
+        }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill={COLORS.accent}>
+            <path d="M20 15.5c-1.25 0-2.45-.2-3.57-.57a1.02 1.02 0 0 0-1.02.24l-2.2 2.2a15.045 15.045 0 0 1-6.59-6.59l2.2-2.21a.96.96 0 0 0 .25-1A11.36 11.36 0 0 1 8.5 4c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1 0 9.39 7.61 17 17 17 .55 0 1-.45 1-1v-3.5c0-.55-.45-1-1-1zM12 3v10l3-3h6V3h-9z"/>
+          </svg>
+          <span style={{ fontFamily: FONTS.body, fontSize: 14, fontWeight: 600, color: COLORS.text }}>{radioToast}</span>
+        </div>
+      )}
     </FontScaleContext.Provider>
     </ThemeContext.Provider>
   );

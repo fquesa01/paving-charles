@@ -895,7 +895,7 @@ const Sidebar = ({ activeTab, setActiveTab, collapsed, setCollapsed }) => {
         )}
       </div>
 
-      <nav style={{ flex: 1, padding: collapsed ? "12px 6px" : "12px 8px", display: "flex", flexDirection: "column", gap: 2 }}>
+      <nav style={{ flex: 1, padding: collapsed ? "12px 6px" : "12px 8px", display: "flex", flexDirection: "column", gap: 2, overflowY: "auto", minHeight: 0 }}>
         {navItems.map(item => (
           <button
             key={item.id}
@@ -933,7 +933,7 @@ const Sidebar = ({ activeTab, setActiveTab, collapsed, setCollapsed }) => {
       </nav>
 
       {collapsed ? (
-        <div style={{ padding: "12px 0", borderTop: `1px solid ${COLORS.border}`, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+        <div style={{ padding: "12px 0", borderTop: `1px solid ${COLORS.border}`, display: "flex", flexDirection: "column", alignItems: "center", gap: 8, flexShrink: 0 }}>
           <FontSizeControls compact />
           <ThemeToggle compact />
           <button onClick={() => setCollapsed(false)} title="Expand sidebar" style={{
@@ -945,7 +945,7 @@ const Sidebar = ({ activeTab, setActiveTab, collapsed, setCollapsed }) => {
           </button>
         </div>
       ) : (
-        <div style={{ padding: "16px 12px", borderTop: `1px solid ${COLORS.border}` }}>
+        <div style={{ padding: "16px 12px", borderTop: `1px solid ${COLORS.border}`, flexShrink: 0 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 8px", marginBottom: 12 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <Avatar initials="SC" size={32} color={COLORS.success} />

@@ -9,6 +9,10 @@ L.Icon.Default.mergeOptions({ iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/
 const ThemeContext = createContext({ isDark: true, toggle: () => {} });
 const useTheme = () => useContext(ThemeContext);
 
+// ─── FONT SCALE CONTEXT ──────────────────────────────
+const FontScaleContext = createContext({ scale: 1, increase: () => {}, decrease: () => {}, reset: () => {} });
+const useFontScale = () => useContext(FontScaleContext);
+
 // ─── MOBILE DETECTION ──────────────────────────────────
 const useIsMobile = (breakpoint = 768) => {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= breakpoint);
@@ -797,6 +801,52 @@ const ThemeToggle = ({ compact }) => {
   );
 };
 
+// ─── FONT SIZE CONTROLS ──────────────────────────────
+const FontSizeControls = ({ compact }) => {
+  const { scale, increase, decrease, reset } = useFontScale();
+  const pct = Math.round(scale * 100);
+  if (compact) {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+        <button onClick={increase} title="Increase font size" style={{
+          width: 36, height: 28, borderRadius: 6, border: `1px solid ${COLORS.border}`,
+          background: "transparent", color: COLORS.textSecondary, cursor: "pointer",
+          fontSize: 13, fontFamily: FONTS.body, fontWeight: 700, display: "flex",
+          alignItems: "center", justifyContent: "center", transition: "all 0.2s",
+        }}>A+</button>
+        <button onClick={decrease} title="Decrease font size" style={{
+          width: 36, height: 28, borderRadius: 6, border: `1px solid ${COLORS.border}`,
+          background: "transparent", color: COLORS.textSecondary, cursor: "pointer",
+          fontSize: 11, fontFamily: FONTS.body, fontWeight: 700, display: "flex",
+          alignItems: "center", justifyContent: "center", transition: "all 0.2s",
+        }}>A-</button>
+      </div>
+    );
+  }
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+      <button onClick={decrease} title="Decrease font size" style={{
+        width: 32, height: 32, borderRadius: 8, border: `1px solid ${COLORS.border}`,
+        background: "transparent", color: COLORS.textSecondary, cursor: "pointer",
+        fontSize: 11, fontFamily: FONTS.body, fontWeight: 700, display: "flex",
+        alignItems: "center", justifyContent: "center", transition: "all 0.2s",
+      }}>A-</button>
+      <button onClick={reset} title={`Font size: ${pct}% — click to reset`} style={{
+        flex: 1, height: 32, borderRadius: 8, border: `1px solid ${COLORS.border}`,
+        background: "transparent", color: COLORS.textMuted, cursor: "pointer",
+        fontSize: 11, fontFamily: FONTS.mono, fontWeight: 500, display: "flex",
+        alignItems: "center", justifyContent: "center", transition: "all 0.2s",
+      }}>{pct}%</button>
+      <button onClick={increase} title="Increase font size" style={{
+        width: 32, height: 32, borderRadius: 8, border: `1px solid ${COLORS.border}`,
+        background: "transparent", color: COLORS.textSecondary, cursor: "pointer",
+        fontSize: 13, fontFamily: FONTS.body, fontWeight: 700, display: "flex",
+        alignItems: "center", justifyContent: "center", transition: "all 0.2s",
+      }}>A+</button>
+    </div>
+  );
+};
+
 // ─── SIDEBAR ─────────────────────────────────────────────
 const Sidebar = ({ activeTab, setActiveTab, collapsed, setCollapsed }) => {
   const navItems = [
@@ -884,6 +934,7 @@ const Sidebar = ({ activeTab, setActiveTab, collapsed, setCollapsed }) => {
 
       {collapsed ? (
         <div style={{ padding: "12px 0", borderTop: `1px solid ${COLORS.border}`, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+          <FontSizeControls compact />
           <ThemeToggle compact />
           <button onClick={() => setCollapsed(false)} title="Expand sidebar" style={{
             background: "none", border: "none", cursor: "pointer", color: COLORS.textMuted,
@@ -904,7 +955,10 @@ const Sidebar = ({ activeTab, setActiveTab, collapsed, setCollapsed }) => {
               </div>
             </div>
           </div>
-          <ThemeToggle />
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <ThemeToggle />
+            <FontSizeControls />
+          </div>
         </div>
       )}
     </div>
@@ -3636,14 +3690,19 @@ export default function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [isDark, setIsDark] = useState(true);
+  const [fontScale, setFontScale] = useState(1);
   const isMobile = useIsMobile();
 
   const toggleTheme = useCallback(() => setIsDark(prev => !prev), []);
+  const increaseFontScale = useCallback(() => setFontScale(prev => Math.min(prev + 0.1, 1.5)), []);
+  const decreaseFontScale = useCallback(() => setFontScale(prev => Math.max(prev - 0.1, 0.7)), []);
+  const resetFontScale = useCallback(() => setFontScale(1), []);
 
   // Apply theme to document
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", isDark ? "dark" : "light");
   }, [isDark]);
+
 
   const handleNav = (tab) => {
     setActiveTab(tab);
@@ -3673,6 +3732,7 @@ export default function App() {
 
   return (
     <ThemeContext.Provider value={{ isDark, toggle: toggleTheme }}>
+    <FontScaleContext.Provider value={{ scale: fontScale, increase: increaseFontScale, decrease: decreaseFontScale, reset: resetFontScale }}>
       <GlobalStyles />
       <div style={{ display: "flex", height: "100vh", overflow: "hidden", background: COLORS.bg }}>
         {/* Desktop sidebar */}
@@ -3716,16 +3776,20 @@ export default function App() {
                 }}>NP</div>
                 <span style={{ fontFamily: FONTS.display, fontWeight: 600, fontSize: 15 }}>{tabLabels[activeTab]}</span>
               </div>
-              <ThemeToggle compact />
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <FontSizeControls compact />
+                <ThemeToggle compact />
+              </div>
             </div>
           )}
-          <main style={{ flex: 1, overflow: "hidden" }}>
+          <main style={{ flex: 1, overflow: "hidden", zoom: fontScale !== 1 ? fontScale : undefined }}>
             {renderView()}
           </main>
         </div>
       </div>
       {/* Voice Assistant FAB */}
       <VoiceAssistantFAB onCommand={handleNav} isMobile={isMobile} />
+    </FontScaleContext.Provider>
     </ThemeContext.Provider>
   );
 }
